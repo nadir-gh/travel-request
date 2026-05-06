@@ -213,7 +213,7 @@ textarea { resize:vertical; min-height:80px; }
 <body>
 
 <!-- (Keep your HTML body structure identical until the script) -->
-<div class="loading-overlay" id="loadingOverlay" style="display:none;">
+<div class="loading-overlay" id="loadingOverlay" style="display:flex;">
   <div class="loading-spinner"></div>
   <div class="loading-text" id="loadingText">Sending Email...</div>
   <div class="loading-sub"  id="loadingSub">Please wait — do not close this page</div>
@@ -251,7 +251,7 @@ textarea { resize:vertical; min-height:80px; }
 </div>
 
 <div class="main">
-  <div class="screen active" id="screen0">
+  <div class="screen" id="screen0">
     <div class="panel">
       <div class="panel-header">
         <div class="panel-icon">📋</div>
@@ -385,29 +385,43 @@ function getApprovalLink(stage) {
 }
 
 // ===== LOAD =====
-window.addEventListener('load', () => {
+// Run immediately — decide which screen to show BEFORE anything is visible
+(function initApp() {
   const params = new URLSearchParams(window.location.search);
   const data  = params.get('data');
   const stage = params.get('stage');
 
-  if (data) {
-    // Approver opening a link — decode state from URL
-    try {
-      S = decodeState(data);
-      restoreUI();
-      if (stage) renderStage(stage);
-    } catch(e) {
-      console.error('Decode error:', e);
-      showScreen('screenNoData');
+  function doInit() {
+    if (data) {
+      // Approver link — decode state and show approval screen
+      try {
+        S = decodeState(data);
+        restoreUI();
+        if (stage) renderStage(stage);
+        else showScreen('screenNoData');
+      } catch(e) {
+        console.error('Decode error:', e);
+        showScreen('screenNoData');
+      }
+    } else {
+      // Fresh employee form
+      S.reqId = 'TRF-' + Date.now().toString().slice(-6);
+      const hdrEl  = document.getElementById('headerReqId');
+      const formEl = document.getElementById('formReqId');
+      if (hdrEl)  hdrEl.textContent  = S.reqId;
+      if (formEl) formEl.textContent = S.reqId;
+      showScreen('screen0');
     }
-  } else {
-    // Fresh form — generate new request ID
-    S.reqId = 'TRF-' + Date.now().toString().slice(-6);
-    document.getElementById('headerReqId').textContent = S.reqId;
-    document.getElementById('formReqId').textContent   = S.reqId;
-    showScreen('screen0');
+    hideLoading();
   }
-});
+
+  // DOM may not be ready yet if script runs early — wait if needed
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', doInit);
+  } else {
+    doInit();
+  }
+})();
 
 // ===== SEND EMAIL =====
 async function sendEmail(toEmail, subject, message) {
