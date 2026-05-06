@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Travel Request Form — IMC</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --primary:#1a3a5c;
+  --primary-light:#2a5a8c;
+  --accent:#c8922a;
+  --accent-light:#e8b84b;
+  --success:#1a6b3a;
+  --success-bg:#e8f5ee;
+  --danger:#8b1a1a;
+  --danger-bg:#fdf0f0;
+  --warning:#7a5c10;
+  --warning-bg:#fef9ec;
+  --info:#1a3a6b;
+  --info-bg:#eef3fc;
+  --border:#d0d8e4;
+  --bg:#f4f7fb;
+  --white:#fff;
+  --text:#1a2535;
+  --muted:#5a6a7e;
+}
+body { font-family:'Segoe UI',Arial,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+/* HEADER */
+.app-header { background:var(--primary); color:white; position:sticky; top:0; z-index:100; box-shadow:0 2px 12px rgba(0,0,0,0.25); }
+.header-inner { max-width:1100px; margin:0 auto; padding:14px 24px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+.header-brand { display:flex; align-items:center; gap:12px; }
+.header-logo { width:40px; height:40px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+.header-title { font-size:18px; font-weight:700; }
+.header-subtitle { font-size:12px; color:rgba(255,255,255,0.65); margin-top:2px; }
+.header-right { display:flex; align-items:center; gap:12px; }
+.header-id-badge { background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25); border-radius:6px; padding:6px 12px; font-size:12px; color:rgba(255,255,255,0.9); font-family:monospace; }
+.status-pill { padding:3px 10px; border-radius:99px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; border:none; white-space:nowrap; }
+.status-pending  { background:#fff3cd; color:#856404; }
+.status-approved { background:#d1f2e0; color:#0d5c2e; }
+.status-rejected { background:#fde8e8; color:#8b1a1a; }
+.status-draft    { background:#e2e8f0; color:#4a5568; }
+
+/* WORKFLOW BAR */
+.workflow-bar { background:#0f2440; }
+.workflow-steps { max-width:1100px; margin:0 auto; display:flex; padding:0 24px; overflow-x:auto; }
+.wf-step { flex:1; min-width:80px; padding:10px 8px; display:flex; align-items:center; gap:8px; border-right:1px solid rgba(255,255,255,0.08); }
+.wf-step:last-child { border-right:none; }
+.wf-dot { width:26px; height:26px; border-radius:50%; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:rgba(255,255,255,0.5); flex-shrink:0; transition:all 0.3s; }
+.wf-step.active .wf-dot   { background:var(--accent); border-color:var(--accent-light); color:white; box-shadow:0 0 0 3px rgba(200,146,42,0.3); }
+.wf-step.done .wf-dot     { background:#1a6b3a; border-color:#2d9e5a; color:white; }
+.wf-step.rejected .wf-dot { background:#8b1a1a; border-color:#b52a2a; color:white; }
+.wf-label { font-size:11px; color:rgba(255,255,255,0.4); line-height:1.3; font-weight:500; }
+.wf-step.active .wf-label   { color:rgba(255,255,255,0.9); }
+.wf-step.done .wf-label     { color:rgba(255,255,255,0.7); }
+.wf-step.rejected .wf-label { color:rgba(255,190,190,0.8); }
+
+/* MAIN */
+.main { max-width:900px; margin:0 auto; padding:28px 24px 60px; }
+
+/* PANELS */
+.panel { background:var(--white); border:1px solid var(--border); border-radius:10px; margin-bottom:24px; overflow:hidden; box-shadow:0 1px 6px rgba(0,0,0,0.06); }
+.panel-header { background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%); color:white; padding:14px 20px; display:flex; align-items:center; gap:10px; }
+.panel-header.accent  { background:linear-gradient(135deg,#7a5000 0%,var(--accent) 100%); }
+.panel-header.success { background:linear-gradient(135deg,#0d4a28 0%,var(--success) 100%); }
+.panel-header.danger  { background:linear-gradient(135deg,#5c0d0d 0%,var(--danger) 100%); }
+.panel-header.security { background:linear-gradient(135deg,#1a3a4c 0%,#2a6a8c 100%); }
+.panel-header.finance  { background:linear-gradient(135deg,#2a4a00 0%,#4a8a10 100%); }
+.panel-icon { width:32px; height:32px; background:rgba(255,255,255,0.18); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+.panel-title    { font-size:15px; font-weight:700; }
+.panel-subtitle { font-size:12px; color:rgba(255,255,255,0.7); margin-top:2px; }
+.panel-body { padding:20px; }
+
+/* FORM FIELDS */
+.field-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.field-group { display:flex; flex-direction:column; gap:6px; }
+.field-group.span2 { grid-column:span 2; }
+label { font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+input[type="text"],input[type="date"],input[type="email"],select,textarea {
+  width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:6px;
+  font-size:14px; font-family:'Segoe UI',Arial,sans-serif; color:var(--text);
+  background:var(--white); transition:border-color 0.2s,box-shadow 0.2s; outline:none;
+}
+input:focus,select:focus,textarea:focus { border-color:var(--primary-light); box-shadow:0 0 0 3px rgba(42,90,140,0.12); }
+textarea { resize:vertical; min-height:80px; }
+
+/* RADIO */
+.radio-group { display:flex; gap:10px; flex-wrap:wrap; padding:4px 0; }
+.radio-option { display:flex; align-items:center; gap:8px; padding:8px 14px; border:1px solid var(--border); border-radius:6px; cursor:pointer; font-size:13px; font-weight:500; transition:all 0.2s; background:var(--white); user-select:none; }
+.radio-option input { display:none; }
+.radio-option.selected { border-color:var(--primary); background:var(--info-bg); color:var(--primary); }
+.radio-dot { width:14px; height:14px; border:2px solid var(--border); border-radius:50%; flex-shrink:0; transition:all 0.2s; }
+.radio-option.selected .radio-dot { border-color:var(--primary); background:var(--primary); box-shadow:inset 0 0 0 3px white; }
+
+/* BUTTONS */
+.btn { padding:10px 22px; border-radius:7px; font-size:14px; font-weight:600; cursor:pointer; border:none; display:inline-flex; align-items:center; gap:7px; transition:all 0.2s; font-family:'Segoe UI',Arial,sans-serif; }
+.btn:hover { transform:translateY(-1px); }
+.btn:active { transform:translateY(0); }
+.btn-primary { background:var(--primary); color:white; box-shadow:0 3px 10px rgba(26,58,92,0.3); }
+.btn-primary:hover { background:var(--primary-light); }
+.btn-success { background:var(--success); color:white; box-shadow:0 3px 10px rgba(26,107,58,0.3); }
+.btn-success:hover { background:#1e8047; }
+.btn-danger  { background:var(--danger);  color:white; box-shadow:0 3px 10px rgba(139,26,26,0.3); }
+.btn-danger:hover  { background:#a82020; }
+.btn-accent  { background:var(--accent);  color:white; box-shadow:0 3px 10px rgba(200,146,42,0.35); }
+.btn-accent:hover  { background:var(--accent-light); color:#4a3000; }
+.btn-outline { background:transparent; color:var(--primary); border:1.5px solid var(--primary); }
+.btn-outline:hover { background:var(--info-bg); }
+.btn-sm { padding:7px 16px; font-size:13px; }
+.btn-bar { display:flex; align-items:center; gap:12px; padding-top:8px; flex-wrap:wrap; }
+.btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+
+/* ALERTS */
+.alert { padding:12px 16px; border-radius:7px; font-size:13px; display:flex; align-items:flex-start; gap:10px; margin-bottom:16px; line-height:1.5; }
+.alert-icon { font-size:16px; flex-shrink:0; margin-top:1px; }
+.alert-info    { background:var(--info-bg);    color:var(--info);    border:1px solid #c0d3f5; }
+.alert-success { background:var(--success-bg); color:var(--success); border:1px solid #b0dfc0; }
+.alert-warning { background:var(--warning-bg); color:var(--warning); border:1px solid #f0d88a; }
+.alert-danger  { background:var(--danger-bg);  color:var(--danger);  border:1px solid #f5c0c0; }
+
+/* DATA TABLE */
+.data-table { width:100%; border-collapse:collapse; font-size:13.5px; }
+.data-table td { padding:9px 14px; border-bottom:1px solid #eef2f8; vertical-align:top; }
+.data-table tr:last-child td { border-bottom:none; }
+.data-table td:first-child { font-weight:600; color:var(--muted); width:38%; font-size:12px; text-transform:uppercase; letter-spacing:0.4px; }
+.data-table td:last-child { color:var(--text); font-weight:500; }
+
+/* DIVIDER */
+.divider { height:1px; background:var(--border); margin:20px 0; }
+
+/* SECTION LABEL */
+.section-label { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:var(--muted); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.section-label span { flex:1; height:1px; background:var(--border); display:block; }
+
+/* ===== DIGITAL STAMP ===== */
+.dig-stamp {
+  border:2px solid var(--border);
+  border-radius:10px;
+  padding:16px 20px;
+  background:#fafcff;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  margin-bottom:12px;
+}
+.dig-stamp-icon {
+  width:48px; height:48px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; flex-shrink:0;
+}
+.dig-stamp-icon.emp  { background:#dbeafe; }
+.dig-stamp-icon.sup  { background:#fef3c7; }
+.dig-stamp-icon.sec  { background:#dbeafe; }
+.dig-stamp-icon.fin  { background:#dcfce7; }
+.dig-stamp-icon.log  { background:#ede9fe; }
+.dig-stamp-body { flex:1; }
+.dig-stamp-role { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:var(--muted); }
+.dig-stamp-name { font-size:15px; font-weight:700; color:var(--text); margin:2px 0; }
+.dig-stamp-signed { font-size:12px; color:var(--success); font-weight:600; display:flex; align-items:center; gap:5px; }
+.dig-stamp-signed.pending { color:var(--warning); }
+.dig-stamp-signed.rejected { color:var(--danger); }
+.dig-stamp-date { font-size:11px; color:var(--muted); margin-top:2px; }
+.dig-stamp-comment { font-size:12px; color:var(--text); margin-top:6px; font-style:italic; border-top:1px dashed var(--border); padding-top:6px; }
+.dig-stamp-badge { text-align:center; }
+
+/* TIMELINE */
+.timeline { padding-left:4px; }
+.tl-item { display:flex; gap:14px; padding-bottom:20px; position:relative; }
+.tl-item:not(:last-child)::before { content:''; position:absolute; left:14px; top:28px; bottom:0; width:1px; background:var(--border); }
+.tl-icon { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; border:2px solid var(--border); background:white; }
+.tl-icon.done     { background:var(--success-bg); border-color:#70c090; }
+.tl-icon.rejected { background:var(--danger-bg);  border-color:#e08080; }
+.tl-content { flex:1; padding-top:2px; }
+.tl-title { font-size:13px; font-weight:600; }
+.tl-meta { font-size:12px; color:var(--muted); margin-top:2px; }
+.tl-comment { font-size:13px; color:var(--text); margin-top:6px; font-style:italic; }
+
+/* LOADING OVERLAY */
+.loading-overlay { position:fixed; inset:0; background:rgba(26,58,92,0.88); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; }
+.loading-spinner { width:48px; height:48px; border:4px solid rgba(255,255,255,0.3); border-top-color:white; border-radius:50%; animation:spin 0.9s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.loading-text { color:white; font-size:16px; font-weight:600; }
+.loading-sub  { color:rgba(255,255,255,0.7); font-size:13px; }
+
+/* TOAST */
+.toast { position:fixed; top:80px; right:24px; background:var(--primary); color:white; padding:12px 20px; border-radius:8px; font-size:14px; font-weight:500; box-shadow:0 4px 20px rgba(0,0,0,0.25); z-index:9999; display:flex; align-items:center; gap:8px; transform:translateY(-10px); opacity:0; transition:all 0.3s; max-width:380px; }
+.toast.show    { transform:translateY(0); opacity:1; }
+.toast.success { background:var(--success); }
+.toast.danger  { background:var(--danger); }
+
+/* SCREENS */
+.screen { display:none; }
+.screen.active { display:block; }
+
+/* ===== PRINT / PDF STYLES ===== */
+#printForm { display:none; }
+@media print {
+  body > *:not(#printForm) { display:none !important; }
+  #printForm { display:block !important; }
+}
+.print-doc { max-width:800px; margin:0 auto; padding:36px 40px; background:white; font-family:'Times New Roman',serif; color:#111; font-size:13px; }
+.print-header { text-align:center; border-bottom:3px double #1a3a5c; padding-bottom:14px; margin-bottom:18px; }
+.print-org   { font-size:18px; font-weight:700; color:#1a3a5c; letter-spacing:1px; text-transform:uppercase; }
+.print-title { font-size:14px; font-weight:600; margin:5px 0 3px; }
+.print-id    { font-size:11px; color:#666; font-family:monospace; }
+.print-section { margin-bottom:16px; }
+.print-section-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#1a3a5c; border-bottom:1px solid #c0c8d4; padding-bottom:4px; margin-bottom:10px; }
+.print-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px 20px; }
+.print-field { display:flex; flex-direction:column; margin-bottom:4px; }
+.print-label { font-size:9px; color:#666; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:1px; }
+.print-value { font-size:12px; font-weight:600; border-bottom:1px solid #ccc; padding:2px 0; min-height:20px; }
+
+/* Digital stamp boxes on PDF */
+.print-stamps { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:12px; }
+.print-stamp-box {
+  border:1.5px solid #b0b8c8;
+  border-radius:6px;
+  padding:10px 12px;
+  text-align:center;
+  background:#f8faff;
+  page-break-inside:avoid;
+}
+.print-stamp-role   { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:#1a3a5c; }
+.print-stamp-name   { font-size:12px; font-weight:700; margin:4px 0 2px; font-family:'Times New Roman',serif; }
+.print-stamp-line   { border-top:1px dashed #aaa; margin:6px 0 4px; }
+.print-stamp-ds     { font-size:10px; font-style:italic; color:#1a5c3a; font-weight:600; }
+.print-stamp-ds.rejected { color:#8b1a1a; }
+.print-stamp-ds.pending  { color:#7a5c10; }
+.print-stamp-date   { font-size:9px; color:#555; margin-top:3px; }
+.print-stamp-comment { font-size:9px; color:#444; margin-top:4px; font-style:italic; border-top:1px dotted #ccc; padding-top:3px; }
+.print-stamp-status { display:inline-block; margin-top:5px; padding:2px 8px; border-radius:10px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; }
+.print-stamp-status.approved { background:#d1f5df; color:#0d5c2e; }
+.print-stamp-status.rejected { background:#fde8e8; color:#8b1a1a; }
+.print-stamp-status.pending  { background:#fff3cd; color:#856404; }
+
+.print-footer { text-align:center; border-top:1px solid #ccc; padding-top:10px; font-size:9px; color:#888; margin-top:20px; }
+
+@media(max-width:640px) {
+  .field-grid { grid-template-columns:1fr; }
+  .field-group.span2 { grid-column:auto; }
+  .dig-stamp { flex-direction:column; align-items:flex-start; }
+  .print-grid { grid-template-columns:1fr; }
+  .print-stamps { grid-template-columns:1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay" style="display:none;">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loadingText">Sending Email...</div>
+  <div class="loading-sub"  id="loadingSub">Please wait — do not close this page</div>
+</div>
+
+<!-- HEADER -->
+<div class="app-header">
+  <div class="header-inner">
+    <div class="header-brand">
+      <div class="header-logo">✈</div>
+      <div>
+        <div class="header-title">Travel Request System</div>
+        <div class="header-subtitle">International Medical Corps — Staff Travel Portal</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-id-badge">
+        <span style="color:rgba(255,255,255,0.5);font-size:10px;margin-right:4px;">REQ ID</span>
+        <span id="headerReqId">—</span>
+      </div>
+      <span class="status-pill status-draft" id="headerStatus">Draft</span>
+    </div>
+  </div>
+</div>
+
+<!-- WORKFLOW BAR -->
+<div class="workflow-bar">
+  <div class="workflow-steps">
+    <div class="wf-step active" id="wf0"><div class="wf-dot">1</div><div class="wf-label">Employee<br>Request</div></div>
+    <div class="wf-step"        id="wf1"><div class="wf-dot">2</div><div class="wf-label">Supervisor<br>Review</div></div>
+    <div class="wf-step"        id="wf2"><div class="wf-dot">3</div><div class="wf-label">Security<br>Approval</div></div>
+    <div class="wf-step"        id="wf3"><div class="wf-dot">4</div><div class="wf-label">Finance<br>Approval</div></div>
+    <div class="wf-step"        id="wf4"><div class="wf-dot">5</div><div class="wf-label">Logistics<br>Arrangement</div></div>
+    <div class="wf-step"        id="wf5"><div class="wf-dot">✓</div><div class="wf-label">Complete<br>Finalized</div></div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ===== SCREEN 0: EMPLOYEE FORM ===== -->
+  <div class="screen active" id="screen0">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon">📋</div>
+        <div>
+          <div class="panel-title">Travel Request Form</div>
+          <div class="panel-subtitle">Complete all fields — your supervisor will be emailed automatically upon submission</div>
+        </div>
+        <div style="margin-left:auto;text-align:right;">
+          <div style="font-size:11px;color:rgba(255,255,255,0.6);">Request ID</div>
+          <div style="font-size:14px;font-weight:700;font-family:monospace;color:#e8d090;" id="formReqId">—</div>
+        </div>
+      </div>
+      <div class="panel-body">
+
+        <div class="alert alert-info">
+          <span class="alert-icon">ℹ️</span>
+          <div>A unique Request ID is auto-generated for every submission. Once you submit, your <strong>Supervisor</strong> will be notified by email automatically. Fields marked <strong>*</strong> are required.</div>
+        </div>
+
+        <div class="section-label"><span></span>Employee Information<span></span></div>
+        <div class="field-grid">
+          <div class="field-group">
+            <label>Full Name *</label>
+            <input type="text" id="empName" placeholder="e.g. Muhammad Ali Khan">
+          </div>
+          <div class="field-group">
+            <label>Designation *</label>
+            <input type="text" id="empDesignation" placeholder="e.g. Senior Analyst">
+          </div>
+          <div class="field-group">
+            <label>Department *</label>
+            <select id="empDept">
+              <option value="">— Select Department —</option>
+              <option>Administration</option>
+              <option>Finance</option>
+              <option>Human Resources</option>
+              <option>Information Technology</option>
+              <option>Logistics</option>
+              <option>Operations</option>
+              <option>Procurement</option>
+              <option>Projects</option>
+              <option>Sales &amp; Marketing</option>
+              <option>Security</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Employee ID</label>
+            <input type="text" id="empId" placeholder="e.g. EMP-2041">
+          </div>
+          <div class="field-group">
+            <label>Your Email Address *</label>
+            <input type="email" id="empEmail" placeholder="your.email@internationalmedicalcorps.org">
+          </div>
+          <div class="field-group">
+            <label>Your Phone Number</label>
+            <input type="text" id="empPhone" placeholder="e.g. +92-300-1234567">
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="section-label"><span></span>Supervisor Information<span></span></div>
+        <div class="field-grid">
+          <div class="field-group">
+            <label>Supervisor Full Name *</label>
+            <input type="text" id="supName" placeholder="Your direct reporting supervisor">
+          </div>
+          <div class="field-group">
+            <label>Supervisor Email *</label>
+            <input type="email" id="supEmail" placeholder="supervisor@internationalmedicalcorps.org">
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="section-label"><span></span>Travel Details<span></span></div>
+        <div class="field-grid">
+          <div class="field-group">
+            <label>Travel Date *</label>
+            <input type="date" id="travelDate">
+          </div>
+          <div class="field-group">
+            <label>Return Date *</label>
+            <input type="date" id="returnDate">
+          </div>
+          <div class="field-group">
+            <label>Destination City / Country *</label>
+            <input type="text" id="destination" placeholder="e.g. Dubai, UAE">
+          </div>
+          <div class="field-group">
+            <label>Purpose of Travel *</label>
+            <input type="text" id="purpose" placeholder="e.g. Client Meeting, Training">
+          </div>
+          <div class="field-group span2">
+            <label>Additional Notes / Special Requirements</label>
+            <textarea id="notes" placeholder="Visa requirements, dietary needs, special equipment, etc."></textarea>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="section-label"><span></span>Travel Preferences<span></span></div>
+        <div class="field-grid">
+          <div class="field-group">
+            <label>Mode of Travel *</label>
+            <div class="radio-group">
+              <label class="radio-option" onclick="selectRadio('travel-mode','air',this)"><input type="radio" name="travel-mode"><div class="radio-dot"></div>✈ By Air</label>
+              <label class="radio-option" onclick="selectRadio('travel-mode','road',this)"><input type="radio" name="travel-mode"><div class="radio-dot"></div>🚗 By Road</label>
+              <label class="radio-option" onclick="selectRadio('travel-mode','train',this)"><input type="radio" name="travel-mode"><div class="radio-dot"></div>🚆 By Train</label>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Hotel Stay Required? *</label>
+            <div class="radio-group">
+              <label class="radio-option" onclick="selectRadio('hotel','yes',this)"><input type="radio" name="hotel"><div class="radio-dot"></div>✅ Yes, Required</label>
+              <label class="radio-option" onclick="selectRadio('hotel','no',this)"><input type="radio" name="hotel"><div class="radio-dot"></div>❌ Not Required</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-bar" style="margin-top:24px;">
+          <button class="btn btn-primary" id="btnSubmit" onclick="submitEmployeeForm()">📤 Submit &amp; Notify Supervisor</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN 0s: SUBMITTED CONFIRMATION ===== -->
+  <div class="screen" id="screen0s">
+    <div class="panel">
+      <div class="panel-header success">
+        <div class="panel-icon">✅</div>
+        <div>
+          <div class="panel-title">Request Submitted Successfully!</div>
+          <div class="panel-subtitle">Your supervisor has been notified by email</div>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="alert alert-success">
+          <span class="alert-icon">📧</span>
+          <div>Request <strong id="submittedId"></strong> has been submitted. An approval email has been sent to your supervisor. You will receive updates at each stage.</div>
+        </div>
+        <div id="submittedSummary"></div>
+        <div class="divider"></div>
+        <div class="section-label"><span></span>Approval Chain — What Happens Next<span></span></div>
+        <div id="chainDisplay"></div>
+        <div class="btn-bar" style="margin-top:16px;">
+          <button class="btn btn-primary" onclick="startNew()">➕ Submit Another Request</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN 1: SUPERVISOR ===== -->
+  <div class="screen" id="screen1">
+    <div class="alert alert-warning">
+      <span class="alert-icon">👤</span>
+      <div><strong>Supervisor Approval Panel</strong> — Review the travel request below and make your decision. Your name, designation and timestamp will be recorded as a digital signature.</div>
+    </div>
+    <div class="panel">
+      <div class="panel-header accent">
+        <div class="panel-icon">🔍</div>
+        <div><div class="panel-title">Supervisor Review</div><div class="panel-subtitle">Review and approve or reject this travel request</div></div>
+      </div>
+      <div class="panel-body">
+        <div id="reviewSummary"></div>
+        <div class="divider"></div>
+        <div class="field-group" style="margin-bottom:16px;">
+          <label>Your Full Name *</label>
+          <input type="text" id="supSignName" placeholder="Enter your full name to confirm your digital approval">
+        </div>
+        <div class="field-group" style="margin-bottom:16px;">
+          <label>Your Designation</label>
+          <input type="text" id="supSignDesig" placeholder="e.g. Programme Manager">
+        </div>
+        <div class="field-group" style="margin-bottom:16px;">
+          <label>Comments (optional)</label>
+          <textarea id="supComment" placeholder="Add any conditions, notes, or reason for rejection..."></textarea>
+        </div>
+        <div class="btn-bar">
+          <button class="btn btn-success" onclick="supervisorDecision('approved')">✅ Approve &amp; Forward to Security</button>
+          <button class="btn btn-danger"  onclick="supervisorDecision('rejected')">❌ Reject Request</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN 2: SECURITY ===== -->
+  <div class="screen" id="screen2">
+    <div class="alert alert-info">
+      <span class="alert-icon">🔒</span>
+      <div><strong>Security Department</strong> — This request has been approved by the Supervisor. Please review and provide security clearance.</div>
+    </div>
+    <div class="panel">
+      <div class="panel-header security">
+        <div class="panel-icon">🔒</div>
+        <div><div class="panel-title">Security Clearance</div><div class="panel-subtitle">Verify destination and provide clearance decision</div></div>
+      </div>
+      <div class="panel-body">
+        <div id="securitySummary"></div>
+        <div class="divider"></div>
+        <div class="field-group" style="margin-bottom:16px;">
+          <label>Security Officer Name *</label>
+          <input type="text" id="secSignName" placeholder="Enter your full name">
+        </div>
+        <div class="field-group" style="margin-bottom:16px;">
+          <label>Your Designation</label>
+          <input type="text" id="secSignDesig" placeholder="e.g. Security Officer">
+        </div>
+        <div class="field-group" style="margin-bottom:16px;">
+          <label>Security Comments</label>
+          <textarea id="secComment" placeholder="Security observations, conditions, or rejection reason..."></textarea>
+        </div>
+        <div class="btn-bar">
+          <button class="btn btn-success" onclick="securityDecision('approved')">✅ Clear &amp; Forward to Finance</button>
+          <button class="btn btn-danger"  onclick="securityDecision('rejected')">❌ Reject — Security Concern</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN 3: FINANCE ===== -->
+  <div class="screen" id="screen3">
+    <div class="alert alert-info">
+      <span class="alert-icon">💰</span>
+      <div><strong>Finance Department</strong> — Security has cleared this request. Please review budget and make your decision.</div>
+    </div>
+    <div class="panel">
+      <div class="panel-header finance">
+        <div class="panel-icon">💰</div>
+        <div><div class="panel-title">Finance Approval</div><div class="panel-subtitle">Review budget availability and approve funding</div></div>
+      </div>
+      <div class="panel-body">
+        <div id="financeSummary"></div>
+        <div class="divider"></div>
+        <div class="field-grid">
+          <div class="field-group">
+            <label>Finance Officer Name *</label>
+            <input type="text" id="finSignName" placeholder="Enter your full name">
+          </div>
+          <div class="field-group">
+            <label>Your Designation</label>
+            <input type="text" id="finSignDesig" placeholder="e.g. Finance Officer">
+          </div>
+          <div class="field-group">
+            <label>Estimated Budget (PKR)</label>
+            <input type="text" id="finBudget" placeholder="e.g. 150,000">
+          </div>
+          <div class="field-group">
+            <label>Budget Code / GL Account</label>
+            <input type="text" id="finBudgetCode" placeholder="e.g. GL-4501-TRV">
+          </div>
+          <div class="field-group span2">
+            <label>Finance Comments</label>
+            <textarea id="finComment" placeholder="Budget notes, conditions, or rejection reason..."></textarea>
+          </div>
+        </div>
+        <div class="btn-bar" style="margin-top:8px;">
+          <button class="btn btn-success" onclick="financeDecision('approved')">✅ Approve &amp; Forward to Logistics</button>
+          <button class="btn btn-danger"  onclick="financeDecision('rejected')">❌ Reject — Budget Issue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN 4: LOGISTICS ===== -->
+  <div class="screen" id="screen4">
+    <div class="alert alert-success">
+      <span class="alert-icon">🚚</span>
+      <div><strong>Logistics Department</strong> — Finance has approved this request. Please confirm arrangements and finalize.</div>
+    </div>
+    <div class="panel">
+      <div class="panel-header success">
+        <div class="panel-icon">🚚</div>
+        <div><div class="panel-title">Logistics Arrangement</div><div class="panel-subtitle">Confirm bookings and finalize all travel arrangements</div></div>
+      </div>
+      <div class="panel-body">
+        <div id="logisticsSummary"></div>
+        <div class="divider"></div>
+        <div class="field-grid">
+          <div class="field-group">
+            <label>Logistics Officer Name *</label>
+            <input type="text" id="logSignName" placeholder="Enter your full name">
+          </div>
+          <div class="field-group">
+            <label>Your Designation</label>
+            <input type="text" id="logSignDesig" placeholder="e.g. Logistics Officer">
+          </div>
+          <div class="field-group">
+            <label>Ticket / Vehicle Booking Reference</label>
+            <input type="text" id="logTicket" placeholder="e.g. PK-20241115-A12">
+          </div>
+          <div class="field-group">
+            <label>Hotel Booking Reference</label>
+            <input type="text" id="logHotel" placeholder="e.g. PEARL-CON-8821">
+          </div>
+          <div class="field-group span2">
+            <label>Logistics Notes &amp; Arrangements</label>
+            <textarea id="logComment" placeholder="Itinerary, pickup times, hotel address, contact numbers..."></textarea>
+          </div>
+        </div>
+        <div class="btn-bar" style="margin-top:8px;">
+          <button class="btn btn-success" onclick="logisticsDecision()">✅ Finalize &amp; Send Approved Document to Employee</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN 5: COMPLETE ===== -->
+  <div class="screen" id="screen5">
+    <div class="alert alert-success">
+      <span class="alert-icon">🎉</span>
+      <div><strong>Travel Request Fully Authorized!</strong> — All departments have approved. The final document has been emailed to the employee.</div>
+    </div>
+    <div class="panel">
+      <div class="panel-header success">
+        <div class="panel-icon">✅</div>
+        <div><div class="panel-title">Authorized Travel Document</div><div class="panel-subtitle">All approvals complete — download or print official document</div></div>
+      </div>
+      <div class="panel-body">
+        <div id="finalSummary"></div>
+        <div class="divider"></div>
+        <div class="section-label"><span></span>Digital Approval Stamps<span></span></div>
+        <div id="finalStamps"></div>
+        <div class="divider"></div>
+        <div class="section-label"><span></span>Approval Timeline<span></span></div>
+        <div class="timeline" id="approvalTimeline"></div>
+        <div class="divider"></div>
+        <div class="btn-bar">
+          <button class="btn btn-accent"   onclick="generatePDF()">📄 Download PDF</button>
+          <button class="btn btn-outline"  onclick="window.print()">🖨️ Print</button>
+          <button class="btn btn-outline"  onclick="startNew()">➕ New Request</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN REJECTED ===== -->
+  <div class="screen" id="screenRejected">
+    <div class="alert alert-danger">
+      <span class="alert-icon">❌</span>
+      <div><strong id="rejectedBy">Request Rejected</strong> — The employee has been notified by email.</div>
+    </div>
+    <div class="panel">
+      <div class="panel-header danger">
+        <div class="panel-icon">❌</div>
+        <div><div class="panel-title">Request Rejected</div><div class="panel-subtitle">Rejection record — employee has been notified</div></div>
+      </div>
+      <div class="panel-body">
+        <div id="rejectedSummary"></div>
+        <div class="divider"></div>
+        <div class="section-label"><span></span>Approval Record<span></span></div>
+        <div id="rejectedStamps"></div>
+        <div class="btn-bar" style="margin-top:16px;">
+          <button class="btn btn-accent"  onclick="generatePDF()">📄 Download Rejection Record</button>
+          <button class="btn btn-outline" onclick="startNew()">➕ New Request</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN: APPROVER PASTE TOKEN (different device fallback) ===== -->
+  <div class="screen" id="screenPaste">
+    <div class="panel">
+      <div class="panel-header accent">
+        <div class="panel-icon">🔗</div>
+        <div>
+          <div class="panel-title">Load Approval Request</div>
+          <div class="panel-subtitle">You are opening this on a different device or browser</div>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="alert alert-warning">
+          <span class="alert-icon">⚠️</span>
+          <div>
+            <strong>Request data not found in this browser.</strong><br>
+            Please copy the <strong>Request Data Code</strong> from the bottom of your approval email and paste it below to load the request.
+          </div>
+        </div>
+        <div class="field-group" style="margin-bottom:16px;">
+          <label>Request Data Code (from your email)</label>
+          <textarea id="pasteToken" style="min-height:120px;font-family:monospace;font-size:11px;" placeholder="Paste the data code from your email here..."></textarea>
+        </div>
+        <div class="btn-bar">
+          <button class="btn btn-primary" onclick="loadFromPaste()">🔓 Load Request</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- PRINT FORM (hidden, used for PDF) -->
+<div id="printForm"><div class="print-doc" id="printDocInner"></div></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== EMAILJS CONFIG =====
+const EMAILJS_PUBLIC_KEY  = '0EeAOuTRgEkvPZuYn';
+const EMAILJS_SERVICE_ID  = 'service_i1t9kqb';
+const EMAILJS_TEMPLATE_ID = 'template_y7ihtnf';
+
+// ===== FIXED DEPARTMENT EMAILS =====
+const DEPT = {
+  security:  'shkayani@internationalmedicalcorps.org',
+  finance:   'shhameed@internationalmedicalcorps.org',
+  logistics: 'ziqbal@internationalmedicalcorps.org'
+};
+
+// ===== STATE =====
+const S = {
+  reqId:'', emp:{}, sup:{}, travel:{},
+  approvals:{
+    supervisor:{ status:'pending', name:'', designation:'', comment:'', date:'' },
+    security:  { status:'pending', name:'', designation:'', comment:'', date:'' },
+    finance:   { status:'pending', name:'', designation:'', comment:'', date:'', budget:'', budgetCode:'' },
+    logistics: { status:'pending', name:'', designation:'', comment:'', date:'', ticket:'', hotel:'' }
+  },
+  radioValues:{},
+  currentStage: null
+};
+
+// ===== INIT =====
+emailjs.init(EMAILJS_PUBLIC_KEY);
+
+window.addEventListener('load', () => {
+  S.reqId = generateId();
+  document.getElementById('headerReqId').textContent = S.reqId;
+  document.getElementById('formReqId').textContent   = S.reqId;
+  document.getElementById('travelDate').value = new Date().toISOString().split('T')[0];
+
+  const params = new URLSearchParams(window.location.search);
+  const stage  = params.get('stage');
+  const req    = params.get('req');
+  if (stage && req) handleApprovalLink(stage, req);
+});
+
+// ===== ID GENERATION =====
+function generateId() {
+  const n = new Date();
+  return `TRV-${n.getFullYear().toString().slice(2)}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}-${Math.floor(1000+Math.random()*9000)}`;
+}
+
+// ===== RADIO =====
+function selectRadio(name, val, el) {
+  document.querySelectorAll(`[onclick*="'${name}'"]`).forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  S.radioValues[name] = val;
+}
+
+// ===== UI HELPERS =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function setWF(step, rejected=false) {
+  for (let i=0; i<=5; i++) {
+    const el = document.getElementById('wf'+i);
+    if (!el) continue;
+    el.classList.remove('active','done','rejected');
+    if      (i < step)  el.classList.add('done');
+    else if (i === step) el.classList.add(rejected ? 'rejected' : 'active');
+  }
+}
+
+function toast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function showLoading(text, sub) {
+  document.getElementById('loadingText').textContent = text;
+  document.getElementById('loadingSub').textContent  = sub || 'Please wait — do not close this page';
+  document.getElementById('loadingOverlay').style.display = 'flex';
+}
+function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none'; }
+
+function validate(fields) {
+  for (const [id, label] of fields) {
+    const el = document.getElementById(id);
+    if (!el || !el.value.trim()) { toast(`⚠ Please fill: ${label}`, 'danger'); if(el) el.focus(); return false; }
+  }
+  return true;
+}
+
+function nowStr() {
+  return new Date().toLocaleString('en-GB', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+function modeLabel(m) {
+  return m==='air'?'✈ By Air': m==='road'?'🚗 By Road':'🚆 By Train';
+}
+
+// ===== LOCALSTORAGE =====
+function saveState() {
+  try { localStorage.setItem('trf_'+S.reqId, JSON.stringify({reqId:S.reqId,emp:S.emp,sup:S.sup,travel:S.travel,approvals:S.approvals})); }
+  catch(e) { console.warn('localStorage save failed',e); }
+}
+
+function loadStateById(reqId) {
+  try { const r = localStorage.getItem('trf_'+reqId); return r ? JSON.parse(r) : null; }
+  catch(e) { return null; }
+}
+
+function buildCompactToken() {
+  const obj = {reqId:S.reqId,emp:S.emp,sup:S.sup,travel:S.travel,approvals:S.approvals};
+  return btoa(encodeURIComponent(JSON.stringify(obj)));
+}
+
+// ===== APPROVAL LINK (short — only reqId in URL) =====
+function approvalLink(stage) {
+  saveState();
+  const base = window.location.href.split('?')[0];
+  return `${base}?stage=${stage}&req=${S.reqId}`;
+}
+
+// ===== LOAD FROM APPROVAL LINK =====
+function handleApprovalLink(stage, reqId) {
+  S.currentStage = stage;
+  const data = loadStateById(reqId);
+  if (data) {
+    restoreState(data);
+    renderStage(stage);
+  } else {
+    // Different device — show paste screen
+    document.getElementById('pasteToken').value = '';
+    showScreen('screenPaste');
+  }
+}
+
+function restoreState(data) {
+  S.reqId=data.reqId; S.emp=data.emp; S.sup=data.sup;
+  S.travel=data.travel; S.approvals=data.approvals;
+  document.getElementById('headerReqId').textContent = S.reqId;
+  document.getElementById('headerStatus').textContent = 'Pending';
+  document.getElementById('headerStatus').className   = 'status-pill status-pending';
+}
+
+function renderStage(stage) {
+  if (stage==='supervisor') { document.getElementById('reviewSummary').innerHTML=summaryHTML();    setWF(1); showScreen('screen1'); }
+  if (stage==='security')   { document.getElementById('securitySummary').innerHTML=summaryHTML();  setWF(2); showScreen('screen2'); }
+  if (stage==='finance')    { document.getElementById('financeSummary').innerHTML=summaryHTML();   setWF(3); showScreen('screen3'); }
+  if (stage==='logistics')  { document.getElementById('logisticsSummary').innerHTML=summaryHTML(); setWF(4); showScreen('screen4'); }
+}
+
+function loadFromPaste() {
+  const raw = document.getElementById('pasteToken').value.trim();
+  try {
+    const data = JSON.parse(decodeURIComponent(atob(raw)));
+    localStorage.setItem('trf_'+data.reqId, JSON.stringify(data));
+    restoreState(data);
+    renderStage(S.currentStage || 'supervisor');
+    toast('✅ Request loaded!','success');
+  } catch(e) { toast('❌ Invalid code — copy it exactly from your email','danger'); }
+}
+
+// ===== SUMMARY TABLE =====
+function summaryHTML() {
+  const e=S.emp, t=S.travel, s=S.sup, a=S.approvals;
+  const rows = [
+    ['Request ID', `<strong style="font-family:monospace;color:var(--primary)">${S.reqId}</strong>`],
+    ['Employee Name', e.name], ['Designation', e.designation], ['Department', e.dept],
+    ['Employee ID', e.id||'—'], ['Email', e.email], ['Phone', e.phone||'—'],
+    ['Supervisor', s.name], ['Travel Date', formatDate(t.date)], ['Return Date', formatDate(t.returnDate)],
+    ['Destination', t.destination], ['Purpose', t.purpose||'—'],
+    ['Mode of Travel', modeLabel(t.mode)], ['Hotel Stay', t.hotel==='yes'?'✅ Required':'❌ Not Required'],
+    ['Notes', t.notes||'—'],
+  ];
+  if(a.finance.budget)    rows.push(['Approved Budget', `PKR ${a.finance.budget}`]);
+  if(a.finance.budgetCode) rows.push(['Budget Code', a.finance.budgetCode]);
+  if(a.logistics.ticket)  rows.push(['Booking Reference', a.logistics.ticket]);
+  if(a.logistics.hotel)   rows.push(['Hotel Reference', a.logistics.hotel]);
+  return `<table class="data-table">${rows.map(([k,v])=>`<tr><td>${k}</td><td>${v||'—'}</td></tr>`).join('')}</table>`;
+}
+
+// ===== DIGITAL STAMP HTML (for screen display) =====
+function stampHTML(iconClass, icon, role, name, designation, status, date, comment) {
+  const isPending  = status === 'pending';
+  const isApproved = status === 'approved';
+  const isRejected = status === 'rejected';
+  const signedClass = isPending ? 'pending' : isRejected ? 'rejected' : '';
+  const signedText  = isPending
+    ? '⏳ Awaiting Decision'
+    : isApproved
+      ? '✅ Digitally Signed &amp; Approved'
+      : '❌ Digitally Signed &amp; Rejected';
+  return `
+  <div class="dig-stamp">
+    <div class="dig-stamp-icon ${iconClass}">${icon}</div>
+    <div class="dig-stamp-body">
+      <div class="dig-stamp-role">${role}</div>
+      <div class="dig-stamp-name">${name||'—'}${designation?` <span style="font-size:12px;font-weight:400;color:var(--muted);">— ${designation}</span>`:''}</div>
+      <div class="dig-stamp-signed ${signedClass}">${signedText}</div>
+      ${date?`<div class="dig-stamp-date">📅 ${date}</div>`:''}
+      ${comment?`<div class="dig-stamp-comment">"${comment}"</div>`:''}
+    </div>
+    <div class="dig-stamp-badge">
+      <span class="status-pill ${isApproved?'status-approved':isRejected?'status-rejected':'status-pending'}">${status.toUpperCase()}</span>
+    </div>
+  </div>`;
+}
+
+function allStampsHTML() {
+  const a=S.approvals, e=S.emp, s=S.sup;
+  return [
+    stampHTML('emp','👤','Employee / Requester', e.name, e.designation, 'approved', nowStr(), ''),
+    stampHTML('sup','👤','Supervisor', s.name, a.supervisor.designation||'', a.supervisor.status, a.supervisor.date, a.supervisor.comment),
+    stampHTML('sec','🔒','Security Department', a.security.name||'Security Team', a.security.designation||'', a.security.status, a.security.date, a.security.comment),
+    stampHTML('fin','💰','Finance Department',  a.finance.name||'Finance Team',   a.finance.designation||'',  a.finance.status,  a.finance.date,  a.finance.comment),
+    stampHTML('log','🚚','Logistics Department',a.logistics.name||'Logistics Team',a.logistics.designation||'',a.logistics.status,a.logistics.date,a.logistics.comment),
+  ].join('');
+}
+
+// ===== EMAIL BUILDER =====
+function buildEmailBody(intro, details, actionText, actionLink) {
+  const e=S.emp, t=S.travel;
+  const fallback = actionLink
+    ? `\n\n──────────────────────────────────────\n⚠ IF THE LINK DOES NOT WORK (opening on a different device):\n1. Open: ${window.location.href.split('?')[0]}?stage=${actionLink.split('stage=')[1]?.split('&')[0]||''}&req=${S.reqId}\n2. Paste this Request Data Code when prompted:\n\n${buildCompactToken()}\n──────────────────────────────────────`
+    : '';
+  return `${intro}
+
+REQUEST DETAILS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Request ID   : ${S.reqId}
+Employee     : ${e.name} (${e.designation})
+Department   : ${e.dept}
+Travel Date  : ${formatDate(t.date)}
+Return Date  : ${formatDate(t.returnDate)}
+Destination  : ${t.destination}
+Purpose      : ${t.purpose||'—'}
+Mode         : ${modeLabel(t.mode)}
+Hotel Stay   : ${t.hotel==='yes'?'Required':'Not Required'}
+${t.notes?`Notes        : ${t.notes}`:''}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${details}
+${actionText?`\n➡ ${actionText}:\n${actionLink}\n(Click or copy this link into your browser)${fallback}`:''}
+
+— IMC Travel Request System | ${S.reqId} | ${nowStr()}`;
+}
+
+async function sendEmail(to, toName, subject, body) {
+  return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+    to_email:to, to_name:toName, subject, message:body,
+    reply_to:S.emp.email||'', from_name:'IMC Travel Request System'
+  });
+}
+
+// ===== SUBMIT EMPLOYEE FORM =====
+async function submitEmployeeForm() {
+  if (!validate([
+    ['empName','Employee Name'],['empDesignation','Designation'],['empDept','Department'],
+    ['empEmail','Your Email'],['supName','Supervisor Name'],['supEmail','Supervisor Email'],
+    ['travelDate','Travel Date'],['returnDate','Return Date'],
+    ['destination','Destination'],['purpose','Purpose of Travel']
+  ])) return;
+  if (!S.radioValues['travel-mode']) { toast('⚠ Please select Mode of Travel','danger'); return; }
+  if (!S.radioValues['hotel'])       { toast('⚠ Please select Hotel Stay option','danger'); return; }
+  if (document.getElementById('returnDate').value < document.getElementById('travelDate').value) {
+    toast('⚠ Return Date cannot be before Travel Date','danger'); return;
+  }
+
+  S.emp = {
+    name:document.getElementById('empName').value.trim(),
+    designation:document.getElementById('empDesignation').value.trim(),
+    dept:document.getElementById('empDept').value,
+    id:document.getElementById('empId').value.trim(),
+    email:document.getElementById('empEmail').value.trim(),
+    phone:document.getElementById('empPhone').value.trim(),
+  };
+  S.sup = {
+    name:document.getElementById('supName').value.trim(),
+    email:document.getElementById('supEmail').value.trim()
+  };
+  S.travel = {
+    date:document.getElementById('travelDate').value,
+    returnDate:document.getElementById('returnDate').value,
+    destination:document.getElementById('destination').value.trim(),
+    purpose:document.getElementById('purpose').value.trim(),
+    notes:document.getElementById('notes').value.trim(),
+    mode:S.radioValues['travel-mode'],
+    hotel:S.radioValues['hotel']
+  };
+
+  document.getElementById('btnSubmit').disabled = true;
+  showLoading('Sending approval email to supervisor...', `Notifying ${S.sup.name}`);
+
+  try {
+    const link = approvalLink('supervisor');
+    await sendEmail(
+      S.sup.email, S.sup.name,
+      `[APPROVAL NEEDED] Travel Request ${S.reqId} — ${S.emp.name}`,
+      buildEmailBody(
+        `Dear ${S.sup.name},\n\nA travel request requires your approval from ${S.emp.name} (${S.emp.dept}).`,
+        `Approval chain: Supervisor → Security → Finance → Logistics`,
+        'Click here to REVIEW & APPROVE / REJECT', link
+      )
+    );
+    // Confirmation to employee
+    await sendEmail(
+      S.emp.email, S.emp.name,
+      `[SUBMITTED] Your Travel Request ${S.reqId} has been received`,
+      buildEmailBody(
+        `Dear ${S.emp.name},\n\nYour travel request has been submitted and sent to ${S.sup.name} for approval.`,
+        `You will receive email updates at each approval stage.`, '', ''
+      )
+    );
+    hideLoading();
+    document.getElementById('headerStatus').textContent = 'Submitted';
+    document.getElementById('headerStatus').className   = 'status-pill status-pending';
+    document.getElementById('submittedId').textContent  = S.reqId;
+    document.getElementById('submittedSummary').innerHTML = summaryHTML();
+    document.getElementById('chainDisplay').innerHTML     = buildChainDisplay();
+    setWF(1); showScreen('screen0s');
+    toast('✅ Submitted! Supervisor has been emailed.','success');
+  } catch(err) {
+    hideLoading();
+    document.getElementById('btnSubmit').disabled = false;
+    toast('❌ Email failed — check EmailJS setup','danger');
+    console.error(err);
+  }
+}
+
+function buildChainDisplay() {
+  const steps = [
+    {icon:'👤',label:'Supervisor',        name:S.sup.name,          email:S.sup.email,    sent:true},
+    {icon:'🔒',label:'Security Dept.',    name:'shkayani',          email:DEPT.security,  sent:false},
+    {icon:'💰',label:'Finance Dept.',     name:'shhameed',          email:DEPT.finance,   sent:false},
+    {icon:'🚚',label:'Logistics Dept.',   name:'ziqbal',            email:DEPT.logistics, sent:false},
+  ];
+  return `<div style="display:flex;flex-direction:column;gap:8px;">` + steps.map((s,i) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:${s.sent?'var(--success-bg)':'var(--bg)'};border:1px solid ${s.sent?'#b0dfc0':'var(--border)'};border-radius:7px;">
+      <span style="font-size:18px;">${s.icon}</span>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;">${i+1}. ${s.label}${s.name?' — '+s.name:''}</div>
+        <div style="font-size:12px;color:var(--muted);">${s.email}</div>
+      </div>
+      <span class="status-pill ${s.sent?'status-pending':'status-draft'}">${s.sent?'📧 Notified':'Waiting'}</span>
+    </div>`).join('') + `</div>`;
+}
+
+// ===== SUPERVISOR DECISION =====
+async function supervisorDecision(decision) {
+  if (!validate([['supSignName','Your Full Name']])) return;
+  S.approvals.supervisor = {
+    status:decision,
+    name:document.getElementById('supSignName').value.trim(),
+    designation:document.getElementById('supSignDesig').value.trim(),
+    comment:document.getElementById('supComment').value.trim(),
+    date:nowStr()
+  };
+  saveState();
+
+  if (decision==='approved') {
+    showLoading('Forwarding to Security...','Emailing '+DEPT.security);
+    try {
+      const link = approvalLink('security');
+      await sendEmail(DEPT.security,'Security Team',
+        `[SECURITY CLEARANCE NEEDED] Travel Request ${S.reqId} — ${S.emp.name}`,
+        buildEmailBody(
+          `Dear Security Team,\n\nThe following travel request has been approved by Supervisor (${S.approvals.supervisor.name}) and requires Security Clearance.`,
+          `✅ SUPERVISOR: Approved by ${S.approvals.supervisor.name} on ${S.approvals.supervisor.date}`,
+          'Click here to REVIEW & PROVIDE SECURITY CLEARANCE', link
+        )
+      );
+      hideLoading();
+      document.getElementById('securitySummary').innerHTML = summaryHTML();
+      setWF(2); showScreen('screen2');
+      toast('✅ Approved! Security has been notified.','success');
+    } catch(e) { hideLoading(); toast('❌ Email failed','danger'); console.error(e); }
+  } else {
+    await sendRejectionEmail('Supervisor', S.approvals.supervisor.name, S.approvals.supervisor.comment);
+  }
+}
+
+// ===== SECURITY DECISION =====
+async function securityDecision(decision) {
+  if (!validate([['secSignName','Security Officer Name']])) return;
+  S.approvals.security = {
+    status:decision,
+    name:document.getElementById('secSignName').value.trim(),
+    designation:document.getElementById('secSignDesig').value.trim(),
+    comment:document.getElementById('secComment').value.trim(),
+    date:nowStr()
+  };
+  saveState();
+
+  if (decision==='approved') {
+    showLoading('Forwarding to Finance...','Emailing '+DEPT.finance);
+    try {
+      const link = approvalLink('finance');
+      await sendEmail(DEPT.finance,'Finance Team',
+        `[FINANCE APPROVAL NEEDED] Travel Request ${S.reqId} — ${S.emp.name}`,
+        buildEmailBody(
+          `Dear Finance Team,\n\nThis travel request has cleared Security and requires Finance Approval.`,
+          `✅ SUPERVISOR: Approved by ${S.approvals.supervisor.name} on ${S.approvals.supervisor.date}\n✅ SECURITY: Cleared by ${S.approvals.security.name} on ${S.approvals.security.date}`,
+          'Click here to REVIEW & APPROVE BUDGET', link
+        )
+      );
+      hideLoading();
+      document.getElementById('financeSummary').innerHTML = summaryHTML();
+      setWF(3); showScreen('screen3');
+      toast('✅ Cleared! Finance has been notified.','success');
+    } catch(e) { hideLoading(); toast('❌ Email failed','danger'); console.error(e); }
+  } else {
+    await sendRejectionEmail('Security Department', S.approvals.security.name, S.approvals.security.comment);
+  }
+}
+
+// ===== FINANCE DECISION =====
+async function financeDecision(decision) {
+  if (!validate([['finSignName','Finance Officer Name']])) return;
+  S.approvals.finance = {
+    status:decision,
+    name:document.getElementById('finSignName').value.trim(),
+    designation:document.getElementById('finSignDesig').value.trim(),
+    comment:document.getElementById('finComment').value.trim(),
+    date:nowStr(),
+    budget:document.getElementById('finBudget').value.trim(),
+    budgetCode:document.getElementById('finBudgetCode').value.trim()
+  };
+  saveState();
+
+  if (decision==='approved') {
+    showLoading('Forwarding to Logistics...','Emailing '+DEPT.logistics);
+    try {
+      const link = approvalLink('logistics');
+      await sendEmail(DEPT.logistics,'Logistics Team',
+        `[LOGISTICS ARRANGEMENT NEEDED] Travel Request ${S.reqId} — ${S.emp.name}`,
+        buildEmailBody(
+          `Dear Logistics Team,\n\nThis travel request is fully approved and requires logistics arrangement and final confirmation.`,
+          `✅ SUPERVISOR: ${S.approvals.supervisor.name} — ${S.approvals.supervisor.date}\n✅ SECURITY: ${S.approvals.security.name} — ${S.approvals.security.date}\n✅ FINANCE: ${S.approvals.finance.name} — ${S.approvals.finance.date} | Budget: PKR ${S.approvals.finance.budget||'TBD'}`,
+          'Click here to CONFIRM ARRANGEMENTS & FINALIZE', link
+        )
+      );
+      hideLoading();
+      document.getElementById('logisticsSummary').innerHTML = summaryHTML();
+      setWF(4); showScreen('screen4');
+      toast('✅ Finance approved! Logistics has been notified.','success');
+    } catch(e) { hideLoading(); toast('❌ Email failed','danger'); console.error(e); }
+  } else {
+    await sendRejectionEmail('Finance Department', S.approvals.finance.name, S.approvals.finance.comment);
+  }
+}
+
+// ===== LOGISTICS FINALIZE =====
+async function logisticsDecision() {
+  if (!validate([['logSignName','Logistics Officer Name']])) return;
+  S.approvals.logistics = {
+    status:'approved',
+    name:document.getElementById('logSignName').value.trim(),
+    designation:document.getElementById('logSignDesig').value.trim(),
+    comment:document.getElementById('logComment').value.trim(),
+    date:nowStr(),
+    ticket:document.getElementById('logTicket').value.trim(),
+    hotel:document.getElementById('logHotel').value.trim()
+  };
+  saveState();
+
+  showLoading('Finalizing & emailing employee...', `Sending approved document to ${S.emp.email}`);
+  try {
+    await sendEmail(S.emp.email, S.emp.name,
+      `[✅ FULLY APPROVED] Your Travel Request ${S.reqId} — ${S.emp.name}`,
+      buildEmailBody(
+        `Dear ${S.emp.name},\n\nCongratulations! Your travel request has been FULLY APPROVED by all departments.`,
+        `✅ SUPERVISOR : Approved by ${S.approvals.supervisor.name} on ${S.approvals.supervisor.date}\n✅ SECURITY   : Cleared by ${S.approvals.security.name} on ${S.approvals.security.date}\n✅ FINANCE    : Approved by ${S.approvals.finance.name} on ${S.approvals.finance.date} | Budget: PKR ${S.approvals.finance.budget||'—'} | Code: ${S.approvals.finance.budgetCode||'—'}\n✅ LOGISTICS  : Confirmed by ${S.approvals.logistics.name} on ${S.approvals.logistics.date}\n\nBOOKING:\nTicket/Vehicle : ${S.approvals.logistics.ticket||'TBD'}\nHotel          : ${S.approvals.logistics.hotel||'N/A'}\n${S.approvals.logistics.comment?`Notes          : ${S.approvals.logistics.comment}`:''}`,
+        '', ''
+      )
+    );
+    hideLoading();
+    document.getElementById('headerStatus').textContent = 'Approved';
+    document.getElementById('headerStatus').className   = 'status-pill status-approved';
+    document.getElementById('finalSummary').innerHTML   = summaryHTML();
+    document.getElementById('finalStamps').innerHTML    = allStampsHTML();
+    document.getElementById('approvalTimeline').innerHTML = buildTimeline();
+    setWF(5); showScreen('screen5');
+    toast('🎉 Fully approved! Employee has been emailed.','success');
+  } catch(e) { hideLoading(); toast('❌ Email failed','danger'); console.error(e); }
+}
+
+// ===== REJECTION EMAIL =====
+async function sendRejectionEmail(dept, byName, reason) {
+  showLoading('Sending rejection notice...', `Emailing ${S.emp.email}`);
+  try {
+    await sendEmail(S.emp.email, S.emp.name,
+      `[REJECTED] Your Travel Request ${S.reqId}`,
+      buildEmailBody(
+        `Dear ${S.emp.name},\n\nYour travel request has been REJECTED by the ${dept}.`,
+        `Rejected By : ${dept} (${byName||'—'})\nDate         : ${nowStr()}\n${reason?`Reason       : ${reason}`:''}`,
+        '', ''
+      )
+    );
+    hideLoading();
+    document.getElementById('rejectedBy').textContent = `Rejected by ${dept} — Employee has been notified`;
+    document.getElementById('headerStatus').textContent = 'Rejected';
+    document.getElementById('headerStatus').className   = 'status-pill status-rejected';
+    document.getElementById('rejectedSummary').innerHTML = summaryHTML();
+    document.getElementById('rejectedStamps').innerHTML  = allStampsHTML();
+    showScreen('screenRejected');
+    toast('Request rejected — employee notified.','danger');
+  } catch(e) { hideLoading(); toast('❌ Email failed','danger'); console.error(e); }
+}
+
+// ===== TIMELINE =====
+function buildTimeline() {
+  return [
+    {key:'supervisor',label:'Supervisor',icon:'👤'},
+    {key:'security',  label:'Security Department',icon:'🔒'},
+    {key:'finance',   label:'Finance Department',icon:'💰'},
+    {key:'logistics', label:'Logistics Department',icon:'🚚'},
+  ].map(s => {
+    const a = S.approvals[s.key];
+    const cls  = a.status==='approved'?'done':a.status==='rejected'?'rejected':'';
+    const icon = a.status==='approved'?'✓':a.status==='rejected'?'✕':'…';
+    return `<div class="tl-item">
+      <div class="tl-icon ${cls}">${icon}</div>
+      <div class="tl-content">
+        <div class="tl-title">${s.icon} ${s.label}${a.name?' — '+a.name:''} <span class="status-pill ${a.status==='approved'?'status-approved':a.status==='rejected'?'status-rejected':'status-pending'}" style="font-size:11px;">${a.status.toUpperCase()}</span></div>
+        <div class="tl-meta">${a.date||'—'}</div>
+        ${a.comment?`<div class="tl-comment">"${a.comment}"</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===== PDF GENERATION =====
+function generatePDF() {
+  buildPrintDoc();
+  html2pdf().set({
+    margin:10, filename:`Travel-Request-${S.reqId}.pdf`,
+    image:{type:'jpeg',quality:0.98},
+    html2canvas:{scale:2,useCORS:true},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
+  }).from(document.getElementById('printDocInner')).save()
+    .then(() => toast('✅ PDF downloaded!','success'));
+  toast('📄 Generating PDF…');
+}
+
+function printStampBox(role, name, designation, status, date, comment) {
+  const sts = status==='approved'?'approved':status==='rejected'?'rejected':'pending';
+  const dsText = status==='approved'
+    ? '✦ Digitally Signed &amp; Approved'
+    : status==='rejected'
+      ? '✦ Digitally Signed &amp; Rejected'
+      : '— Pending —';
+  return `<div class="print-stamp-box">
+    <div class="print-stamp-role">${role}</div>
+    <div class="print-stamp-name">${name||'—'}</div>
+    ${designation?`<div style="font-size:9px;color:#555;">${designation}</div>`:''}
+    <div class="print-stamp-line"></div>
+    <div class="print-stamp-ds ${sts}">${dsText}</div>
+    <div class="print-stamp-date">${date||'Not yet processed'}</div>
+    ${comment?`<div class="print-stamp-comment">${comment}</div>`:''}
+    <span class="print-stamp-status ${sts}">${status.toUpperCase()}</span>
+  </div>`;
+}
+
+function buildPrintDoc() {
+  const e=S.emp, t=S.travel, a=S.approvals, s=S.sup;
+  document.getElementById('printDocInner').innerHTML = `
+  <div class="print-header">
+    <div class="print-org">International Medical Corps</div>
+    <div class="print-title">Official Staff Travel Authorization Form</div>
+    <div class="print-id">Request ID: ${S.reqId} &nbsp;|&nbsp; Generated: ${nowStr()}</div>
+  </div>
+
+  <div class="print-section">
+    <div class="print-section-title">Employee Information</div>
+    <div class="print-grid">
+      <div class="print-field"><div class="print-label">Full Name</div><div class="print-value">${e.name||'—'}</div></div>
+      <div class="print-field"><div class="print-label">Employee ID</div><div class="print-value">${e.id||'—'}</div></div>
+      <div class="print-field"><div class="print-label">Designation</div><div class="print-value">${e.designation||'—'}</div></div>
+      <div class="print-field"><div class="print-label">Department</div><div class="print-value">${e.dept||'—'}</div></div>
+      <div class="print-field"><div class="print-label">Email</div><div class="print-value">${e.email||'—'}</div></div>
+      <div class="print-field"><div class="print-label">Phone</div><div class="print-value">${e.phone||'—'}</div></div>
+      <div class="print-field"><div class="print-label">Supervisor</div><div class="print-value">${s.name||'—'}</div></div>
+      <div class="print-field"><div class="print-label">Supervisor Email</div><div class="print-value">${s.email||'—'}</div></div>
+    </div>
+  </div>
+
+  <div class="print-section">
+    <div class="print-section-title">Travel Details</div>
+    <div class="print-grid">
+      <div class="print-field"><div class="print-label">Travel Date</div><div class="print-value">${formatDate(t.date)}</div></div>
+      <div class="print-field"><div class="print-label">Return Date</div><div class="print-value">${formatDate(t.returnDate)}</div></div>
+      <div class="print-field"><div class="print-label">Destination</div><div class="print-value">${t.destination||'—'}</div></div>
+      <div class="print-field"><div class="print-label">Purpose</div><div class="print-value">${t.purpose||'—'}</div></div>
+      <div class="print-field"><div class="print-label">Mode of Travel</div><div class="print-value">${modeLabel(t.mode)}</div></div>
+      <div class="print-field"><div class="print-label">Hotel Stay</div><div class="print-value">${t.hotel==='yes'?'Required':'Not Required'}</div></div>
+      ${a.finance.budget?`<div class="print-field"><div class="print-label">Approved Budget</div><div class="print-value">PKR ${a.finance.budget}</div></div>`:''}
+      ${a.finance.budgetCode?`<div class="print-field"><div class="print-label">Budget Code</div><div class="print-value">${a.finance.budgetCode}</div></div>`:''}
+      ${a.logistics.ticket?`<div class="print-field"><div class="print-label">Booking Ref</div><div class="print-value">${a.logistics.ticket}</div></div>`:''}
+      ${a.logistics.hotel?`<div class="print-field"><div class="print-label">Hotel Ref</div><div class="print-value">${a.logistics.hotel}</div></div>`:''}
+    </div>
+    ${t.notes?`<div class="print-field" style="margin-top:6px;"><div class="print-label">Notes</div><div class="print-value" style="font-weight:400;">${t.notes}</div></div>`:''}
+    ${a.logistics.comment?`<div class="print-field" style="margin-top:6px;"><div class="print-label">Logistics Notes</div><div class="print-value" style="font-weight:400;">${a.logistics.comment}</div></div>`:''}
+  </div>
+
+  <div class="print-section">
+    <div class="print-section-title">Digital Approvals &amp; Signatures</div>
+    <div class="print-stamps">
+      ${printStampBox('Employee / Requester', e.name, e.designation, 'approved', nowStr(), '')}
+      ${printStampBox('Supervisor', s.name, a.supervisor.designation, a.supervisor.status, a.supervisor.date, a.supervisor.comment)}
+      ${printStampBox('Security Department', a.security.name||'Security Officer', a.security.designation, a.security.status, a.security.date, a.security.comment)}
+      ${printStampBox('Finance Department', a.finance.name||'Finance Officer', a.finance.designation, a.finance.status, a.finance.date, a.finance.comment)}
+      ${printStampBox('Logistics Department', a.logistics.name||'Logistics Officer', a.logistics.designation, a.logistics.status, a.logistics.date, a.logistics.comment)}
+    </div>
+  </div>
+
+  <div class="print-footer">
+    International Medical Corps — Official Travel Authorization &nbsp;|&nbsp;
+    Request ID: ${S.reqId} &nbsp;|&nbsp; ${nowStr()} &nbsp;|&nbsp;
+    Unauthorized alterations are strictly prohibited.
+  </div>`;
+}
+
+function startNew() {
+  if (confirm('Start a new request? Current data will be cleared.'))
+    location.href = window.location.href.split('?')[0];
+}
+</script>
+</body>
+</html>
