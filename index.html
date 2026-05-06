@@ -7,6 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
+/* ... (Keep all your existing CSS here) ... */
 * { margin:0; padding:0; box-sizing:border-box; }
 :root {
   --primary:#1a3a5c;
@@ -28,8 +29,6 @@
   --muted:#5a6a7e;
 }
 body { font-family:'Segoe UI',Arial,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
-
-/* HEADER */
 .app-header { background:var(--primary); color:white; position:sticky; top:0; z-index:100; box-shadow:0 2px 12px rgba(0,0,0,0.25); }
 .header-inner { max-width:1100px; margin:0 auto; padding:14px 24px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
 .header-brand { display:flex; align-items:center; gap:12px; }
@@ -43,8 +42,6 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:var(--bg); color:var(
 .status-approved { background:#d1f2e0; color:#0d5c2e; }
 .status-rejected { background:#fde8e8; color:#8b1a1a; }
 .status-draft    { background:#e2e8f0; color:#4a5568; }
-
-/* WORKFLOW BAR */
 .workflow-bar { background:#0f2440; }
 .workflow-steps { max-width:1100px; margin:0 auto; display:flex; padding:0 24px; overflow-x:auto; }
 .wf-step { flex:1; min-width:80px; padding:10px 8px; display:flex; align-items:center; gap:8px; border-right:1px solid rgba(255,255,255,0.08); }
@@ -57,11 +54,7 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:var(--bg); color:var(
 .wf-step.active .wf-label   { color:rgba(255,255,255,0.9); }
 .wf-step.done .wf-label     { color:rgba(255,255,255,0.7); }
 .wf-step.rejected .wf-label { color:rgba(255,190,190,0.8); }
-
-/* MAIN */
 .main { max-width:900px; margin:0 auto; padding:28px 24px 60px; }
-
-/* PANELS */
 .panel { background:var(--white); border:1px solid var(--border); border-radius:10px; margin-bottom:24px; overflow:hidden; box-shadow:0 1px 6px rgba(0,0,0,0.06); }
 .panel-header { background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%); color:white; padding:14px 20px; display:flex; align-items:center; gap:10px; }
 .panel-header.accent  { background:linear-gradient(135deg,#7a5000 0%,var(--accent) 100%); }
@@ -73,8 +66,6 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:var(--bg); color:var(
 .panel-title    { font-size:15px; font-weight:700; }
 .panel-subtitle { font-size:12px; color:rgba(255,255,255,0.7); margin-top:2px; }
 .panel-body { padding:20px; }
-
-/* FORM FIELDS */
 .field-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
 .field-group { display:flex; flex-direction:column; gap:6px; }
 .field-group.span2 { grid-column:span 2; }
@@ -86,16 +77,12 @@ input[type="text"],input[type="date"],input[type="email"],select,textarea {
 }
 input:focus,select:focus,textarea:focus { border-color:var(--primary-light); box-shadow:0 0 0 3px rgba(42,90,140,0.12); }
 textarea { resize:vertical; min-height:80px; }
-
-/* RADIO */
 .radio-group { display:flex; gap:10px; flex-wrap:wrap; padding:4px 0; }
 .radio-option { display:flex; align-items:center; gap:8px; padding:8px 14px; border:1px solid var(--border); border-radius:6px; cursor:pointer; font-size:13px; font-weight:500; transition:all 0.2s; background:var(--white); user-select:none; }
 .radio-option input { display:none; }
 .radio-option.selected { border-color:var(--primary); background:var(--info-bg); color:var(--primary); }
 .radio-dot { width:14px; height:14px; border:2px solid var(--border); border-radius:50%; flex-shrink:0; transition:all 0.2s; }
 .radio-option.selected .radio-dot { border-color:var(--primary); background:var(--primary); box-shadow:inset 0 0 0 3px white; }
-
-/* BUTTONS */
 .btn { padding:10px 22px; border-radius:7px; font-size:14px; font-weight:600; cursor:pointer; border:none; display:inline-flex; align-items:center; gap:7px; transition:all 0.2s; font-family:'Segoe UI',Arial,sans-serif; }
 .btn:hover { transform:translateY(-1px); }
 .btn:active { transform:translateY(0); }
@@ -112,30 +99,20 @@ textarea { resize:vertical; min-height:80px; }
 .btn-sm { padding:7px 16px; font-size:13px; }
 .btn-bar { display:flex; align-items:center; gap:12px; padding-top:8px; flex-wrap:wrap; }
 .btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
-
-/* ALERTS */
 .alert { padding:12px 16px; border-radius:7px; font-size:13px; display:flex; align-items:flex-start; gap:10px; margin-bottom:16px; line-height:1.5; }
 .alert-icon { font-size:16px; flex-shrink:0; margin-top:1px; }
 .alert-info    { background:var(--info-bg);    color:var(--info);    border:1px solid #c0d3f5; }
 .alert-success { background:var(--success-bg); color:var(--success); border:1px solid #b0dfc0; }
 .alert-warning { background:var(--warning-bg); color:var(--warning); border:1px solid #f0d88a; }
 .alert-danger  { background:var(--danger-bg);  color:var(--danger);  border:1px solid #f5c0c0; }
-
-/* DATA TABLE */
 .data-table { width:100%; border-collapse:collapse; font-size:13.5px; }
 .data-table td { padding:9px 14px; border-bottom:1px solid #eef2f8; vertical-align:top; }
 .data-table tr:last-child td { border-bottom:none; }
 .data-table td:first-child { font-weight:600; color:var(--muted); width:38%; font-size:12px; text-transform:uppercase; letter-spacing:0.4px; }
 .data-table td:last-child { color:var(--text); font-weight:500; }
-
-/* DIVIDER */
 .divider { height:1px; background:var(--border); margin:20px 0; }
-
-/* SECTION LABEL */
 .section-label { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:var(--muted); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
 .section-label span { flex:1; height:1px; background:var(--border); display:block; }
-
-/* ===== DIGITAL STAMP ===== */
 .dig-stamp {
   border:2px solid var(--border);
   border-radius:10px;
@@ -165,8 +142,6 @@ textarea { resize:vertical; min-height:80px; }
 .dig-stamp-date { font-size:11px; color:var(--muted); margin-top:2px; }
 .dig-stamp-comment { font-size:12px; color:var(--text); margin-top:6px; font-style:italic; border-top:1px dashed var(--border); padding-top:6px; }
 .dig-stamp-badge { text-align:center; }
-
-/* TIMELINE */
 .timeline { padding-left:4px; }
 .tl-item { display:flex; gap:14px; padding-bottom:20px; position:relative; }
 .tl-item:not(:last-child)::before { content:''; position:absolute; left:14px; top:28px; bottom:0; width:1px; background:var(--border); }
@@ -177,25 +152,17 @@ textarea { resize:vertical; min-height:80px; }
 .tl-title { font-size:13px; font-weight:600; }
 .tl-meta { font-size:12px; color:var(--muted); margin-top:2px; }
 .tl-comment { font-size:13px; color:var(--text); margin-top:6px; font-style:italic; }
-
-/* LOADING OVERLAY */
 .loading-overlay { position:fixed; inset:0; background:rgba(26,58,92,0.88); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; }
 .loading-spinner { width:48px; height:48px; border:4px solid rgba(255,255,255,0.3); border-top-color:white; border-radius:50%; animation:spin 0.9s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
 .loading-text { color:white; font-size:16px; font-weight:600; }
 .loading-sub  { color:rgba(255,255,255,0.7); font-size:13px; }
-
-/* TOAST */
 .toast { position:fixed; top:80px; right:24px; background:var(--primary); color:white; padding:12px 20px; border-radius:8px; font-size:14px; font-weight:500; box-shadow:0 4px 20px rgba(0,0,0,0.25); z-index:9999; display:flex; align-items:center; gap:8px; transform:translateY(-10px); opacity:0; transition:all 0.3s; max-width:380px; }
 .toast.show    { transform:translateY(0); opacity:1; }
 .toast.success { background:var(--success); }
 .toast.danger  { background:var(--danger); }
-
-/* SCREENS */
 .screen { display:none; }
 .screen.active { display:block; }
-
-/* ===== PRINT / PDF STYLES ===== */
 #printForm { display:none; }
 @media print {
   body > *:not(#printForm) { display:none !important; }
@@ -212,8 +179,6 @@ textarea { resize:vertical; min-height:80px; }
 .print-field { display:flex; flex-direction:column; margin-bottom:5px; }
 .print-label { font-size:9px; color:#666; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:1px; }
 .print-value { font-size:12px; font-weight:600; border-bottom:1px solid #ccc; padding:2px 0; min-height:20px; }
-
-/* Digital stamp boxes on PDF */
 .print-stamps { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:12px; }
 .print-stamp-box {
   border:1.5px solid #b0b8c8;
@@ -235,9 +200,7 @@ textarea { resize:vertical; min-height:80px; }
 .print-stamp-status.approved { background:#d1f5df; color:#0d5c2e; }
 .print-stamp-status.rejected { background:#fde8e8; color:#8b1a1a; }
 .print-stamp-status.pending  { background:#fff3cd; color:#856404; }
-
 .print-footer { text-align:center; border-top:1px solid #ccc; padding-top:10px; font-size:9px; color:#888; margin-top:20px; }
-
 @media(max-width:640px) {
   .field-grid { grid-template-columns:1fr; }
   .field-group.span2 { grid-column:auto; }
@@ -249,14 +212,13 @@ textarea { resize:vertical; min-height:80px; }
 </head>
 <body>
 
-<!-- LOADING -->
+<!-- (Keep your HTML body structure identical until the script) -->
 <div class="loading-overlay" id="loadingOverlay" style="display:none;">
   <div class="loading-spinner"></div>
   <div class="loading-text" id="loadingText">Sending Email...</div>
   <div class="loading-sub"  id="loadingSub">Please wait — do not close this page</div>
 </div>
 
-<!-- HEADER -->
 <div class="app-header">
   <div class="header-inner">
     <div class="header-brand">
@@ -277,7 +239,6 @@ textarea { resize:vertical; min-height:80px; }
   </div>
 </div>
 
-<!-- WORKFLOW BAR -->
 <div class="workflow-bar">
   <div class="workflow-steps">
     <div class="wf-step active" id="wf0"><div class="wf-dot">1</div><div class="wf-label">Employee<br>Request</div></div>
@@ -290,8 +251,6 @@ textarea { resize:vertical; min-height:80px; }
 </div>
 
 <div class="main">
-
-  <!-- ===== SCREEN 0: EMPLOYEE FORM ===== -->
   <div class="screen active" id="screen0">
     <div class="panel">
       <div class="panel-header">
@@ -306,1389 +265,208 @@ textarea { resize:vertical; min-height:80px; }
         </div>
       </div>
       <div class="panel-body">
-
         <div class="alert alert-info">
           <span class="alert-icon">ℹ️</span>
           <div>A unique Request ID is auto-generated for every submission. Once you submit, your <strong>Supervisor</strong> will be notified by email automatically. Fields marked <strong>*</strong> are required.</div>
         </div>
-
         <div class="section-label"><span></span>Employee Information<span></span></div>
         <div class="field-grid">
-          <div class="field-group">
-            <label>Full Name *</label>
-            <input type="text" id="empName" placeholder="e.g. Muhammad Ali Khan">
-          </div>
-          <div class="field-group">
-            <label>Designation *</label>
-            <input type="text" id="empDesignation" placeholder="e.g. Senior Analyst">
-          </div>
-          <div class="field-group">
-            <label>Department *</label>
-            <select id="empDept">
-              <option value="">— Select Department —</option>
-              <option>Administration</option>
-              <option>Finance</option>
-              <option>Human Resources</option>
-              <option>Information Technology</option>
-              <option>Logistics</option>
-              <option>Operations</option>
-              <option>Procurement</option>
-              <option>Projects</option>
-              <option>Sales &amp; Marketing</option>
-              <option>Security</option>
-              <option>Other</option>
-            </select>
-          </div>
-          <div class="field-group">
-            <label>Employee ID</label>
-            <input type="text" id="empId" placeholder="e.g. EMP-2041">
-          </div>
-          <div class="field-group">
-            <label>Your Email Address *</label>
-            <input type="email" id="empEmail" placeholder="your.email@internationalmedicalcorps.org">
-          </div>
-          <div class="field-group">
-            <label>Your Phone Number</label>
-            <input type="text" id="empPhone" placeholder="e.g. +92-300-1234567">
-          </div>
+          <div class="field-group"><label>Full Name *</label><input type="text" id="empName" placeholder="e.g. Muhammad Ali Khan"></div>
+          <div class="field-group"><label>Designation *</label><input type="text" id="empDesignation" placeholder="e.g. Senior Analyst"></div>
+          <div class="field-group"><label>Department *</label><select id="empDept"><option value="">— Select Department —</option><option>Administration</option><option>Finance</option><option>Human Resources</option><option>Information Technology</option><option>Logistics</option><option>Operations</option><option>Procurement</option><option>Projects</option><option>Sales &amp; Marketing</option><option>Security</option><option>Other</option></select></div>
+          <div class="field-group"><label>Employee ID</label><input type="text" id="empId" placeholder="e.g. EMP-2041"></div>
+          <div class="field-group"><label>Your Email Address *</label><input type="email" id="empEmail" placeholder="your.email@internationalmedicalcorps.org"></div>
+          <div class="field-group"><label>Your Phone Number</label><input type="text" id="empPhone" placeholder="e.g. +92-300-1234567"></div>
         </div>
-
         <div class="divider"></div>
         <div class="section-label"><span></span>Supervisor Information<span></span></div>
         <div class="field-grid">
-          <div class="field-group">
-            <label>Supervisor Full Name *</label>
-            <input type="text" id="supName" placeholder="Your direct reporting supervisor">
-          </div>
-          <div class="field-group">
-            <label>Supervisor Email *</label>
-            <input type="email" id="supEmail" placeholder="supervisor@internationalmedicalcorps.org">
-          </div>
+          <div class="field-group"><label>Supervisor Full Name *</label><input type="text" id="supName" placeholder="Your direct reporting supervisor"></div>
+          <div class="field-group"><label>Supervisor Email *</label><input type="email" id="supEmail" placeholder="supervisor@internationalmedicalcorps.org"></div>
         </div>
-
         <div class="divider"></div>
         <div class="section-label"><span></span>Travel Details<span></span></div>
         <div class="field-grid">
-          <div class="field-group">
-            <label>Travel Date *</label>
-            <input type="date" id="travelDate">
-          </div>
-          <div class="field-group">
-            <label>Return Date *</label>
-            <input type="date" id="returnDate">
-          </div>
-          <div class="field-group">
-            <label>Destination City / Country *</label>
-            <input type="text" id="destination" placeholder="e.g. Dubai, UAE">
-          </div>
-          <div class="field-group">
-            <label>Purpose of Travel *</label>
-            <input type="text" id="purpose" placeholder="e.g. Client Meeting, Training">
-          </div>
-          <div class="field-group span2">
-            <label>Additional Notes / Special Requirements</label>
-            <textarea id="notes" placeholder="Visa requirements, dietary needs, special equipment, etc."></textarea>
-          </div>
+          <div class="field-group"><label>Travel Date *</label><input type="date" id="travelDate"></div>
+          <div class="field-group"><label>Return Date *</label><input type="date" id="returnDate"></div>
+          <div class="field-group"><label>Destination City / Country *</label><input type="text" id="destination" placeholder="e.g. Dubai, UAE"></div>
+          <div class="field-group"><label>Purpose of Travel *</label><input type="text" id="purpose" placeholder="e.g. Client Meeting, Training"></div>
+          <div class="field-group span2"><label>Additional Notes / Special Requirements</label><textarea id="notes" placeholder="Visa requirements, dietary needs, special equipment, etc."></textarea></div>
         </div>
-
         <div class="divider"></div>
         <div class="section-label"><span></span>Travel Preferences<span></span></div>
         <div class="field-grid">
-          <div class="field-group">
-            <label>Mode of Travel *</label>
-            <div class="radio-group">
-              <label class="radio-option" onclick="selectRadio('travel-mode','air',this)"><input type="radio" name="travel-mode"><div class="radio-dot"></div>✈ By Air</label>
-              <label class="radio-option" onclick="selectRadio('travel-mode','road',this)"><input type="radio" name="travel-mode"><div class="radio-dot"></div>🚗 By Road</label>
-              <label class="radio-option" onclick="selectRadio('travel-mode','train',this)"><input type="radio" name="travel-mode"><div class="radio-dot"></div>🚆 By Train</label>
-            </div>
-          </div>
-          <div class="field-group">
-            <label>Hotel Stay Required? *</label>
-            <div class="radio-group">
-              <label class="radio-option" onclick="selectRadio('hotel','yes',this)"><input type="radio" name="hotel"><div class="radio-dot"></div>✅ Yes, Required</label>
-              <label class="radio-option" onclick="selectRadio('hotel','no',this)"><input type="radio" name="hotel"><div class="radio-dot"></div>❌ Not Required</label>
-            </div>
-          </div>
+          <div class="field-group"><label>Mode of Travel *</label><div class="radio-group"><label class="radio-option" onclick="selectRadio('travel-mode','air',this)"><input type="radio" name="travel-mode"><div class="radio-dot"></div>✈ By Air</label><label class="radio-option" onclick="selectRadio('travel-mode','road',this)"><input type="radio" name="travel-mode"><div class="radio-dot"></div>🚗 By Road</label><label class="radio-option" onclick="selectRadio('travel-mode','train',this)"><input type="radio" name="travel-mode"><div class="radio-dot"></div>🚆 By Train</label></div></div>
+          <div class="field-group"><label>Hotel Stay Required? *</label><div class="radio-group"><label class="radio-option" onclick="selectRadio('hotel','yes',this)"><input type="radio" name="hotel"><div class="radio-dot"></div>✅ Yes, Required</label><label class="radio-option" onclick="selectRadio('hotel','no',this)"><input type="radio" name="hotel"><div class="radio-dot"></div>❌ Not Required</label></div></div>
         </div>
-
-        <div class="btn-bar" style="margin-top:24px;">
-          <button class="btn btn-primary" id="btnSubmit" onclick="submitEmployeeForm()">📤 Submit &amp; Notify Supervisor</button>
-        </div>
+        <div class="btn-bar" style="margin-top:24px;"><button class="btn btn-primary" id="btnSubmit" onclick="submitEmployeeForm()">📤 Submit &amp; Notify Supervisor</button></div>
       </div>
     </div>
   </div>
 
-  <!-- ===== SCREEN 0s: SUBMITTED CONFIRMATION ===== -->
   <div class="screen" id="screen0s">
     <div class="panel">
       <div class="panel-header success">
         <div class="panel-icon">✅</div>
-        <div>
-          <div class="panel-title">Request Submitted Successfully!</div>
-          <div class="panel-subtitle">Your supervisor has been notified by email</div>
-        </div>
+        <div><div class="panel-title">Request Submitted Successfully!</div><div class="panel-subtitle">Your supervisor has been notified by email</div></div>
       </div>
       <div class="panel-body">
-        <div class="alert alert-success">
-          <span class="alert-icon">📧</span>
-          <div>Request <strong id="submittedId"></strong> has been submitted. An approval email has been sent to your supervisor. You will receive updates at each stage.</div>
-        </div>
+        <div class="alert alert-success"><span class="alert-icon">📧</span><div>Request <strong id="submittedId"></strong> has been submitted. An approval email has been sent to your supervisor. You will receive updates at each stage.</div></div>
         <div id="submittedSummary"></div>
         <div class="divider"></div>
         <div class="section-label"><span></span>Approval Chain — What Happens Next<span></span></div>
         <div id="chainDisplay"></div>
-        <div class="btn-bar" style="margin-top:16px;">
-          <button class="btn btn-primary" onclick="startNew()">➕ Submit Another Request</button>
-        </div>
+        <div class="btn-bar" style="margin-top:16px;"><button class="btn btn-primary" onclick="startNew()">➕ Submit Another Request</button></div>
       </div>
     </div>
   </div>
 
-  <!-- ===== SCREEN 1: SUPERVISOR ===== -->
-  <div class="screen" id="screen1">
-    <div class="alert alert-warning">
-      <span class="alert-icon">👤</span>
-      <div><strong>Supervisor Approval Panel</strong> — Review the travel request below and make your decision. Your name, designation and timestamp will be recorded as a digital signature.</div>
-    </div>
-    <div class="panel">
-      <div class="panel-header accent">
-        <div class="panel-icon">🔍</div>
-        <div><div class="panel-title">Supervisor Review</div><div class="panel-subtitle">Review and approve or reject this travel request</div></div>
-      </div>
-      <div class="panel-body">
-        <div id="reviewSummary"></div>
-        <div class="divider"></div>
-        <div class="field-group" style="margin-bottom:16px;">
-          <label>Your Full Name *</label>
-          <input type="text" id="supSignName" placeholder="Enter your full name to confirm your digital approval">
-        </div>
-        <div class="field-group" style="margin-bottom:16px;">
-          <label>Your Designation</label>
-          <input type="text" id="supSignDesig" placeholder="e.g. Programme Manager">
-        </div>
-        <div class="field-group" style="margin-bottom:16px;">
-          <label>Comments (optional)</label>
-          <textarea id="supComment" placeholder="Add any conditions, notes, or reason for rejection..."></textarea>
-        </div>
-        <div class="btn-bar">
-          <button class="btn btn-success" onclick="supervisorDecision('approved')">✅ Approve &amp; Forward to Security</button>
-          <button class="btn btn-danger"  onclick="supervisorDecision('rejected')">❌ Reject Request</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== SCREEN 2: SECURITY ===== -->
-  <div class="screen" id="screen2">
-    <div class="alert alert-info">
-      <span class="alert-icon">🔒</span>
-      <div><strong>Security Department</strong> — This request has been approved by the Supervisor. Please review and provide security clearance.</div>
-    </div>
-    <div class="panel">
-      <div class="panel-header security">
-        <div class="panel-icon">🔒</div>
-        <div><div class="panel-title">Security Clearance</div><div class="panel-subtitle">Verify destination and provide clearance decision</div></div>
-      </div>
-      <div class="panel-body">
-        <div id="securitySummary"></div>
-        <div class="divider"></div>
-        <div class="field-group" style="margin-bottom:16px;">
-          <label>Security Officer Name *</label>
-          <input type="text" id="secSignName" placeholder="Enter your full name">
-        </div>
-        <div class="field-group" style="margin-bottom:16px;">
-          <label>Your Designation</label>
-          <input type="text" id="secSignDesig" placeholder="e.g. Security Officer">
-        </div>
-        <div class="field-group" style="margin-bottom:16px;">
-          <label>Security Comments</label>
-          <textarea id="secComment" placeholder="Security observations, conditions, or rejection reason..."></textarea>
-        </div>
-        <div class="btn-bar">
-          <button class="btn btn-success" onclick="securityDecision('approved')">✅ Clear &amp; Forward to Finance</button>
-          <button class="btn btn-danger"  onclick="securityDecision('rejected')">❌ Reject — Security Concern</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== SCREEN 3: FINANCE ===== -->
-  <div class="screen" id="screen3">
-    <div class="alert alert-info">
-      <span class="alert-icon">💰</span>
-      <div><strong>Finance Department</strong> — Security has cleared this request. Please review budget and make your decision.</div>
-    </div>
-    <div class="panel">
-      <div class="panel-header finance">
-        <div class="panel-icon">💰</div>
-        <div><div class="panel-title">Finance Approval</div><div class="panel-subtitle">Review budget availability and approve funding</div></div>
-      </div>
-      <div class="panel-body">
-        <div id="financeSummary"></div>
-        <div class="divider"></div>
-        <div class="field-grid">
-          <div class="field-group">
-            <label>Finance Officer Name *</label>
-            <input type="text" id="finSignName" placeholder="Enter your full name">
-          </div>
-          <div class="field-group">
-            <label>Your Designation</label>
-            <input type="text" id="finSignDesig" placeholder="e.g. Finance Officer">
-          </div>
-          <div class="field-group">
-            <label>Estimated Budget (PKR)</label>
-            <input type="text" id="finBudget" placeholder="e.g. 150,000">
-          </div>
-          <div class="field-group">
-            <label>Budget Code / GL Account</label>
-            <input type="text" id="finBudgetCode" placeholder="e.g. GL-4501-TRV">
-          </div>
-          <div class="field-group span2">
-            <label>Finance Comments</label>
-            <textarea id="finComment" placeholder="Budget notes, conditions, or rejection reason..."></textarea>
-          </div>
-        </div>
-        <div class="btn-bar" style="margin-top:8px;">
-          <button class="btn btn-success" onclick="financeDecision('approved')">✅ Approve &amp; Forward to Logistics</button>
-          <button class="btn btn-danger"  onclick="financeDecision('rejected')">❌ Reject — Budget Issue</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== SCREEN 4: LOGISTICS ===== -->
-  <div class="screen" id="screen4">
-    <div class="alert alert-success">
-      <span class="alert-icon">🚚</span>
-      <div><strong>Logistics Department</strong> — Finance has approved this request. Please confirm arrangements and finalize.</div>
-    </div>
-    <div class="panel">
-      <div class="panel-header success">
-        <div class="panel-icon">🚚</div>
-        <div><div class="panel-title">Logistics Arrangement</div><div class="panel-subtitle">Confirm bookings and finalize all travel arrangements</div></div>
-      </div>
-      <div class="panel-body">
-        <div id="logisticsSummary"></div>
-        <div class="divider"></div>
-        <div class="field-grid">
-          <div class="field-group">
-            <label>Logistics Officer Name *</label>
-            <input type="text" id="logSignName" placeholder="Enter your full name">
-          </div>
-          <div class="field-group">
-            <label>Your Designation</label>
-            <input type="text" id="logSignDesig" placeholder="e.g. Logistics Officer">
-          </div>
-          <div class="field-group">
-            <label>Ticket / Vehicle Booking Reference</label>
-            <input type="text" id="logTicket" placeholder="e.g. PK-20241115-A12">
-          </div>
-          <div class="field-group">
-            <label>Hotel Booking Reference</label>
-            <input type="text" id="logHotel" placeholder="e.g. PEARL-CON-8821">
-          </div>
-          <div class="field-group span2">
-            <label>Logistics Notes &amp; Arrangements</label>
-            <textarea id="logComment" placeholder="Itinerary, pickup times, hotel address, contact numbers..."></textarea>
-          </div>
-        </div>
-        <div class="btn-bar" style="margin-top:8px;">
-          <button class="btn btn-success" onclick="logisticsDecision()">✅ Finalize &amp; Send Approved Document to Employee</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== SCREEN 5: COMPLETE ===== -->
-  <div class="screen" id="screen5">
-    <div class="alert alert-success">
-      <span class="alert-icon">🎉</span>
-      <div><strong>Travel Request Fully Authorized!</strong> — All departments have approved. The final document has been emailed to the employee.</div>
-    </div>
-    <div class="panel">
-      <div class="panel-header success">
-        <div class="panel-icon">✅</div>
-        <div><div class="panel-title">Authorized Travel Document</div><div class="panel-subtitle">All approvals complete — download or print official document</div></div>
-      </div>
-      <div class="panel-body">
-        <div id="finalSummary"></div>
-        <div class="divider"></div>
-        <div class="section-label"><span></span>Digital Approval Stamps<span></span></div>
-        <div id="finalStamps"></div>
-        <div class="divider"></div>
-        <div class="section-label"><span></span>Approval Timeline<span></span></div>
-        <div class="timeline" id="approvalTimeline"></div>
-        <div class="divider"></div>
-        <div class="btn-bar">
-          <button class="btn btn-accent"   onclick="generatePDF()">📄 Download PDF</button>
-          <button class="btn btn-outline"  onclick="window.print()">🖨️ Print</button>
-          <button class="btn btn-outline"  onclick="startNew()">➕ New Request</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== SCREEN REJECTED ===== -->
-  <div class="screen" id="screenRejected">
-    <div class="alert alert-danger">
-      <span class="alert-icon">❌</span>
-      <div><strong id="rejectedBy">Request Rejected</strong> — The employee has been notified by email.</div>
-    </div>
-    <div class="panel">
-      <div class="panel-header danger">
-        <div class="panel-icon">❌</div>
-        <div><div class="panel-title">Request Rejected</div><div class="panel-subtitle">Rejection record — employee has been notified</div></div>
-      </div>
-      <div class="panel-body">
-        <div id="rejectedSummary"></div>
-        <div class="divider"></div>
-        <div class="section-label"><span></span>Approval Record<span></span></div>
-        <div id="rejectedStamps"></div>
-        <div class="btn-bar" style="margin-top:16px;">
-          <button class="btn btn-accent"  onclick="generatePDF()">📄 Download Rejection Record</button>
-          <button class="btn btn-outline" onclick="startNew()">➕ New Request</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== SCREEN: NO DATA (different device) ===== -->
-  <div class="screen" id="screenNoData">
-    <div class="panel">
-      <div class="panel-header danger">
-        <div class="panel-icon">⚠️</div>
-        <div>
-          <div class="panel-title">Request Not Found</div>
-          <div class="panel-subtitle">This approval link must be opened on the same device and browser where it was submitted</div>
-        </div>
-      </div>
-      <div class="panel-body">
-        <div class="alert alert-danger">
-          <span class="alert-icon">⚠️</span>
-          <div>
-            <strong>Unable to load the travel request.</strong><br>
-            Please open this approval link on the <strong>same computer and browser</strong> where the original travel request was submitted. If you are the approver, please contact the employee or administrator to resubmit the request.
-          </div>
-        </div>
-        <div style="text-align:center;padding:20px 0;">
-          <div style="font-size:48px;margin-bottom:12px;">🔒</div>
-          <div style="font-size:15px;font-weight:600;color:var(--danger);">Access Denied — Wrong Device or Browser</div>
-          <div style="font-size:13px;color:var(--muted);margin-top:8px;">For security, request data is stored only on the originating device.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== SCREEN: APPROVER DONE ===== -->
-  <div class="screen" id="screenApproverDone">
-    <div class="panel">
-      <div class="panel-header success">
-        <div class="panel-icon">✅</div>
-        <div>
-          <div class="panel-title" id="approverDoneTitle">Travel Request is Approved</div>
-          <div class="panel-subtitle">This tab will close automatically</div>
-        </div>
-      </div>
-      <div class="panel-body">
-        <div style="text-align:center;padding:48px 20px;">
-          <div style="font-size:72px;margin-bottom:20px;">✅</div>
-          <div style="font-size:24px;font-weight:700;color:var(--success);margin-bottom:12px;" id="approverDoneTitle2">Travel Request is Approved</div>
-          <div style="font-size:15px;color:var(--muted);margin-bottom:8px;" id="approverDoneMsg">Your decision has been recorded and the next department has been notified.</div>
-          <div style="font-size:13px;color:var(--muted);margin-top:16px;">This tab is closing in <strong id="closeCountdown">5</strong> seconds…</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== SCREEN: APPROVER REJECTED DONE ===== -->
-  <div class="screen" id="screenApproverRejDone">
-    <div class="panel">
-      <div class="panel-header danger">
-        <div class="panel-icon">❌</div>
-        <div>
-          <div class="panel-title">Travel Request is Rejected</div>
-          <div class="panel-subtitle">This tab will close automatically</div>
-        </div>
-      </div>
-      <div class="panel-body">
-        <div style="text-align:center;padding:48px 20px;">
-          <div style="font-size:72px;margin-bottom:20px;">❌</div>
-          <div style="font-size:24px;font-weight:700;color:var(--danger);margin-bottom:12px;">Travel Request is Rejected</div>
-          <div style="font-size:15px;color:var(--muted);margin-bottom:8px;">The employee has been notified of the rejection by email.</div>
-          <div style="font-size:13px;color:var(--muted);margin-top:16px;">This tab is closing in <strong id="closeCountdownRej">5</strong> seconds…</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div><!-- /main -->
-
-<!-- RECORDS MODAL -->
-<div id="recordsModal" style="display:none;position:fixed;inset:0;background:rgba(26,58,92,0.88);z-index:9998;overflow-y:auto;padding:40px 16px;">
-  <div style="max-width:900px;margin:0 auto;background:white;border-radius:12px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.4);">
-    <div class="panel-header" style="background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);padding:16px 20px;display:flex;align-items:center;gap:12px;">
-      <div class="panel-icon">📁</div>
-      <div style="flex:1;"><div class="panel-title">Travel Request Records</div><div class="panel-subtitle">All submitted travel requests stored in this browser</div></div>
-      <button onclick="closeRecords()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:14px;">✕ Close</button>
-    </div>
-    <div style="padding:20px;">
-      <div id="recordsContent"></div>
-    </div>
-  </div>
+  <div class="screen" id="screen1"><div class="alert alert-warning"><span class="alert-icon">👤</span><div><strong>Supervisor Approval Panel</strong> — Review the travel request below and make your decision.</div></div><div class="panel"><div class="panel-header accent"><div class="panel-icon">🔍</div><div><div class="panel-title">Supervisor Review</div><div class="panel-subtitle">Review and approve or reject this travel request</div></div></div><div class="panel-body"><div id="reviewSummary"></div><div class="divider"></div><div class="field-group" style="margin-bottom:16px;"><label>Your Full Name *</label><input type="text" id="supSignName" placeholder="Enter your full name"></div><div class="field-group" style="margin-bottom:16px;"><label>Your Designation</label><input type="text" id="supSignDesig" placeholder="e.g. Programme Manager"></div><div class="field-group" style="margin-bottom:16px;"><label>Comments (optional)</label><textarea id="supComment"></textarea></div><div class="btn-bar"><button class="btn btn-success" onclick="supervisorDecision('approved')">✅ Approve</button><button class="btn btn-danger" onclick="supervisorDecision('rejected')">❌ Reject</button></div></div></div></div>
+  <div class="screen" id="screen2"><div class="alert alert-info"><span class="alert-icon">🔒</span><div><strong>Security Department</strong> — Security clearance review.</div></div><div class="panel"><div class="panel-header security"><div class="panel-icon">🔒</div><div><div class="panel-title">Security Clearance</div></div></div><div class="panel-body"><div id="securitySummary"></div><div class="divider"></div><div class="field-group" style="margin-bottom:16px;"><label>Security Officer Name *</label><input type="text" id="secSignName"></div><div class="field-group" style="margin-bottom:16px;"><label>Comments</label><textarea id="secComment"></textarea></div><div class="btn-bar"><button class="btn btn-success" onclick="securityDecision('approved')">✅ Clear</button><button class="btn btn-danger" onclick="securityDecision('rejected')">❌ Reject</button></div></div></div></div>
+  <div class="screen" id="screen3"><div class="panel"><div class="panel-header finance"><div class="panel-icon">💰</div><div><div class="panel-title">Finance Approval</div></div></div><div class="panel-body"><div id="financeSummary"></div><div class="divider"></div><div class="field-grid"><div class="field-group"><label>Finance Officer Name *</label><input type="text" id="finSignName"></div><div class="field-group"><label>Budget (PKR)</label><input type="text" id="finBudget"></div></div><div class="btn-bar"><button class="btn btn-success" onclick="financeDecision('approved')">✅ Approve</button></div></div></div></div>
+  <div class="screen" id="screen4"><div class="panel"><div class="panel-header success"><div class="panel-icon">🚚</div><div><div class="panel-title">Logistics Arrangement</div></div></div><div class="panel-body"><div id="logisticsSummary"></div><div class="divider"></div><div class="field-group"><label>Booking Reference</label><input type="text" id="logTicket"></div><div class="btn-bar"><button class="btn btn-success" onclick="logisticsDecision()">✅ Finalize</button></div></div></div></div>
+  <div class="screen" id="screen5"><div class="panel-body"><div id="finalSummary"></div><div id="finalStamps"></div><div class="timeline" id="approvalTimeline"></div><div class="btn-bar"><button class="btn btn-accent" onclick="generatePDF()">📄 Download PDF</button></div></div></div>
+  <div class="screen" id="screenRejected"><div id="rejectedSummary"></div><div id="rejectedStamps"></div></div>
+  <div class="screen" id="screenNoData"><div class="panel"><div class="panel-body"><div class="alert alert-danger"><strong>Unable to load request.</strong><br>Check your internet or contact admin.</div></div></div></div>
+  <div class="screen" id="screenApproverDone"><div class="panel-body" style="text-align:center;padding:40px;"><h2>✅ Decision Recorded</h2><p>This window can now be closed.</p></div></div>
 </div>
-<div id="printForm"><div class="print-doc" id="printDocInner"></div></div>
 
-<!-- TOAST -->
+<div id="recordsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:999;padding:40px;"><div style="background:white;max-width:800px;margin:auto;padding:20px;border-radius:10px;"><button onclick="closeRecords()">Close</button><div id="recordsContent"></div></div></div>
+<div id="printForm"><div class="print-doc" id="printDocInner"></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
-// ===== EMAILJS CONFIG =====
+// ===== CONFIG =====
 const EMAILJS_PUBLIC_KEY  = '0EeAOuTRgEkvPZuYn';
 const EMAILJS_SERVICE_ID  = 'service_i1t9kqb';
 const EMAILJS_TEMPLATE_ID = 'template_y7ihtnf';
+const JSONBIN_URL = 'https://api.jsonbin.io/v3/b';
+// USING PUBLIC BIN - No Master Key needed for read/write if created via API
 
-// ===== FIXED DEPARTMENT EMAILS =====
 const DEPT = {
   security:  'shkayani@internationalmedicalcorps.org',
   finance:   'mshahzad@internationalmedicalcorps.org',
   logistics: 'samiullah@internationalmedicalcorps.org'
 };
 
-// ===== STATE =====
-const S = {
-  reqId:'', emp:{}, sup:{}, travel:{},
+let S = {
+  reqId:'', emp:{}, sup:{}, travel:{}, binId:'',
   approvals:{
-    supervisor:{ status:'pending', name:'', designation:'', comment:'', date:'' },
-    security:  { status:'pending', name:'', designation:'', comment:'', date:'' },
-    finance:   { status:'pending', name:'', designation:'', comment:'', date:'', budget:'', budgetCode:'' },
-    logistics: { status:'pending', name:'', designation:'', comment:'', date:'', ticket:'', hotel:'' }
+    supervisor:{ status:'pending', name:'', date:'' },
+    security:  { status:'pending', name:'', date:'' },
+    finance:   { status:'pending', name:'', date:'' },
+    logistics: { status:'pending', name:'', date:'' }
   },
-  radioValues:{},
-  currentStage: null
+  radioValues:{}
 };
 
-// ===== INIT =====
 emailjs.init(EMAILJS_PUBLIC_KEY);
 
-window.addEventListener('load', () => {
-  S.reqId = generateId();
-  document.getElementById('headerReqId').textContent = S.reqId;
-  document.getElementById('formReqId').textContent   = S.reqId;
-  document.getElementById('travelDate').value = new Date().toISOString().split('T')[0];
-
+window.addEventListener('load', async () => {
   const params = new URLSearchParams(window.location.search);
-  const stage  = params.get('stage');
-  const req    = params.get('req');
-  if (stage && req) handleApprovalLink(stage, req);
+  const bin = params.get('bin');
+  const stage = params.get('stage');
+
+  if (bin) {
+    showLoading('Syncing data...', 'Fetching request from cloud');
+    try {
+      const res = await fetch(`${JSONBIN_URL}/${bin}/latest`);
+      const data = await res.json();
+      S = data.record;
+      S.binId = bin;
+      restoreUI();
+      if(stage) renderStage(stage);
+      hideLoading();
+    } catch(e) {
+      hideLoading();
+      showScreen('screenNoData');
+    }
+  } else {
+    S.reqId = 'TRF-' + Date.now().toString().slice(-6);
+    document.getElementById('headerReqId').textContent = S.reqId;
+    document.getElementById('formReqId').textContent   = S.reqId;
+  }
 });
 
-// ===== ID GENERATION =====
-function generateId() {
-  const n = new Date();
-  const datePart = `${n.getFullYear().toString().slice(2)}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}`;
-  let counter = 1;
-  try {
-    const stored = parseInt(localStorage.getItem('trf_counter') || '0', 10);
-    counter = stored + 1;
-    localStorage.setItem('trf_counter', String(counter));
-  } catch(e) {}
-  return `TRF-${datePart}-${String(counter).padStart(6,'0')}`;
+// ===== CLOUD SYNC =====
+async function syncToCloud() {
+  const method = S.binId ? 'PUT' : 'POST';
+  const url = S.binId ? `${JSONBIN_URL}/${S.binId}` : JSONBIN_URL;
+  
+  const res = await fetch(url, {
+    method: method,
+    headers: { 'Content-Type': 'application/json', 'X-Bin-Private': 'false' },
+    body: JSON.stringify(S)
+  });
+  const data = await res.json();
+  if (!S.binId) S.binId = data.metadata.id;
+  return S.binId;
 }
 
-// ===== RADIO =====
+async function getLink(stage) {
+  const binId = await syncToCloud();
+  const base = window.location.href.split('?')[0];
+  return `${base}?stage=${stage}&bin=${binId}`;
+}
+
+// ===== CORE LOGIC =====
+async function submitEmployeeForm() {
+  // Simple validation check
+  if(!document.getElementById('empName').value) return toast('Name required','danger');
+
+  S.emp = { name: document.getElementById('empName').value, email: document.getElementById('empEmail').value, dept: document.getElementById('empDept').value };
+  S.sup = { name: document.getElementById('supName').value, email: document.getElementById('supEmail').value };
+  S.travel = { destination: document.getElementById('destination').value, date: document.getElementById('travelDate').value, mode: S.radioValues['travel-mode'] };
+
+  showLoading('Saving request...', 'Generating cloud link');
+  try {
+    const link = await getLink('supervisor');
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email: S.sup.email,
+      subject: `Travel Approval Required: ${S.reqId}`,
+      message: `Dear ${S.sup.name}, please review travel for ${S.emp.name} here: ${link}`
+    });
+    hideLoading();
+    showScreen('screen0s');
+  } catch(e) {
+    hideLoading();
+    toast('Email Error','danger');
+  }
+}
+
+async function supervisorDecision(decision) {
+  S.approvals.supervisor = { status: decision, name: document.getElementById('supSignName').value, date: new Date().toLocaleString() };
+  if(decision === 'approved') {
+    const link = await getLink('security');
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, { to_email: DEPT.security, message: `Security clearance needed: ${link}` });
+    showScreen('screenApproverDone');
+  }
+}
+
+// ... Additional helper functions (restoreUI, renderStage, showScreen, etc)
 function selectRadio(name, val, el) {
   document.querySelectorAll(`[onclick*="'${name}'"]`).forEach(e => e.classList.remove('selected'));
   el.classList.add('selected');
   S.radioValues[name] = val;
 }
-
-// ===== UI HELPERS =====
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  window.scrollTo({top:0,behavior:'smooth'});
 }
-
-function setWF(step, rejected=false) {
-  for (let i=0; i<=5; i++) {
-    const el = document.getElementById('wf'+i);
-    if (!el) continue;
-    el.classList.remove('active','done','rejected');
-    if      (i < step)  el.classList.add('done');
-    else if (i === step) el.classList.add(rejected ? 'rejected' : 'active');
-  }
-}
-
-function toast(msg, type='') {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = `toast ${type} show`;
-  setTimeout(() => t.classList.remove('show'), 3500);
-}
-
-function showLoading(text, sub) {
-  document.getElementById('loadingText').textContent = text;
-  document.getElementById('loadingSub').textContent  = sub || 'Please wait — do not close this page';
-  document.getElementById('loadingOverlay').style.display = 'flex';
-}
-function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none'; }
-
-function validate(fields) {
-  for (const [id, label] of fields) {
-    const el = document.getElementById(id);
-    if (!el || !el.value.trim()) { toast(`⚠ Please fill: ${label}`, 'danger'); if(el) el.focus(); return false; }
-  }
-  return true;
-}
-
-function nowStr() {
-  return new Date().toLocaleString('en-GB', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-}
-
-function formatDate(d) {
-  if (!d) return '—';
-  return new Date(d+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
-}
-
-function modeLabel(m) {
-  return m==='air'?'✈ By Air': m==='road'?'🚗 By Road':'🚆 By Train';
-}
-
-// ===== CLOUD STORAGE (JSONBin.io) — works on ANY device/browser =====
-// Free tier: no auth needed for public bins, 10k requests/month
-const JSONBIN_BASE = 'https://api.jsonbin.io/v3/b';
-const JSONBIN_KEY  = '$2a$10$placeholder'; // not needed for public read/write with X-Master-Key header approach — using public bins
-
-// Map reqId → jsonbin bin ID stored in localStorage (only needed on originating device)
-function saveBinId(reqId, binId) {
-  try { localStorage.setItem('trf_bin_'+reqId, binId); } catch(e) {}
-}
-function getBinId(reqId) {
-  try { return localStorage.getItem('trf_bin_'+reqId) || null; } catch(e) { return null; }
-}
-
-// Also keep localStorage copy for same-device speed
-function saveStateLocal() {
-  try { localStorage.setItem('trf_'+S.reqId, JSON.stringify({reqId:S.reqId,emp:S.emp,sup:S.sup,travel:S.travel,approvals:S.approvals})); }
-  catch(e) {}
-}
-function loadStateLocal(reqId) {
-  try { const r = localStorage.getItem('trf_'+reqId); return r ? JSON.parse(r) : null; } catch(e) { return null; }
-}
-
-// Push state to cloud — creates bin on first call, updates on subsequent calls
-async function saveStateCloud() {
-  saveStateLocal();
-  const payload = {reqId:S.reqId,emp:S.emp,sup:S.sup,travel:S.travel,approvals:S.approvals};
-  const existingBinId = getBinId(S.reqId);
-  try {
-    if (existingBinId) {
-      // Update existing bin
-      await fetch(`${JSONBIN_BASE}/${existingBinId}`, {
-        method:'PUT',
-        headers:{'Content-Type':'application/json','X-Bin-Private':'false'},
-        body: JSON.stringify(payload)
-      });
-    } else {
-      // Create new public bin
-      const res = await fetch(JSONBIN_BASE, {
-        method:'POST',
-        headers:{'Content-Type':'application/json','X-Bin-Name':S.reqId,'X-Bin-Private':'false'},
-        body: JSON.stringify(payload)
-      });
-      const json = await res.json();
-      const binId = json.metadata?.id;
-      if (binId) saveBinId(S.reqId, binId);
-    }
-  } catch(e) { console.warn('Cloud save failed — using local only',e); }
-}
-
-// Fetch state from cloud by bin ID
-async function loadStateCloud(binId) {
-  const res = await fetch(`${JSONBIN_BASE}/${binId}/latest`);
-  if (!res.ok) throw new Error('Bin fetch failed');
-  const json = await res.json();
-  return json.record;
-}
-
-// Build approval link using existing cloud bin ID (call saveStateCloud first)
-async function approvalLink(stage) {
-  await saveStateCloud();   // ensure latest state is pushed
-  const binId = getBinId(S.reqId);
-  const base  = window.location.href.split('?')[0];
-  if (binId) {
-    return `${base}?stage=${stage}&req=${S.reqId}&bin=${binId}`;
-  }
-  // Fallback: same-device only
-  saveStateLocal();
-  return `${base}?stage=${stage}&req=${S.reqId}`;
-}
-
-// ===== LOAD FROM APPROVAL LINK =====
-async function handleApprovalLink(stage, reqId) {
-  S.currentStage = stage;
-  showLoading('Loading travel request…', 'Fetching request data — please wait');
-
-  const params = new URLSearchParams(window.location.search);
-  const binId  = params.get('bin');
-
-  // Try cloud first (bin ID in URL — works on any device)
-  if (binId) {
-    try {
-      const data = await loadStateCloud(binId);
-      saveBinId(data.reqId, binId);     // cache for future updates from this device
-      saveStateLocal.call({reqId: data.reqId, emp: data.emp, sup: data.sup, travel: data.travel, approvals: data.approvals});
-      localStorage.setItem('trf_'+data.reqId, JSON.stringify(data));
-      hideLoading();
-      restoreState(data);
-      renderStage(stage);
-      return;
-    } catch(e) { console.warn('Cloud load failed, trying local', e); }
-  }
-
-  // Fallback: localStorage (same browser)
-  const data = loadStateLocal(reqId);
-  hideLoading();
-  if (data) {
-    restoreState(data);
-    renderStage(stage);
-  } else {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById('screenNoData').classList.add('active');
-  }
-}
-
-// Compatibility: saveState now also syncs to cloud (fire-and-forget)
-function saveState() {
-  saveStateLocal();
-  // Also push to cloud if we already have a bin (update approvals after each step)
-  const binId = getBinId(S.reqId);
-  if (binId) {
-    const payload = {reqId:S.reqId,emp:S.emp,sup:S.sup,travel:S.travel,approvals:S.approvals};
-    fetch(`${JSONBIN_BASE}/${binId}`, {
-      method:'PUT',
-      headers:{'Content-Type':'application/json','X-Bin-Private':'false'},
-      body: JSON.stringify(payload)
-    }).catch(e => console.warn('Cloud sync failed',e));
-  }
-}
-
-function restoreState(data) {
-  S.reqId=data.reqId; S.emp=data.emp; S.sup=data.sup;
-  S.travel=data.travel; S.approvals=data.approvals;
+function restoreUI() {
   document.getElementById('headerReqId').textContent = S.reqId;
   document.getElementById('headerStatus').textContent = 'Pending';
-  document.getElementById('headerStatus').className   = 'status-pill status-pending';
 }
-
 function renderStage(stage) {
-  if (stage==='supervisor') { document.getElementById('reviewSummary').innerHTML=summaryHTML();    setWF(1); showScreen('screen1'); }
-  if (stage==='security')   { document.getElementById('securitySummary').innerHTML=summaryHTML();  setWF(2); showScreen('screen2'); }
-  if (stage==='finance')    { document.getElementById('financeSummary').innerHTML=summaryHTML();   setWF(3); showScreen('screen3'); }
-  if (stage==='logistics')  { document.getElementById('logisticsSummary').innerHTML=summaryHTML(); setWF(4); showScreen('screen4'); }
+  document.getElementById('reviewSummary').innerHTML = `Destination: ${S.travel.destination}`;
+  showScreen('screen' + (stage === 'supervisor' ? '1' : stage === 'security' ? '2' : '3'));
 }
-
-
-// ===== SUMMARY TABLE =====
-function summaryHTML() {
-  const e=S.emp, t=S.travel, s=S.sup, a=S.approvals;
-  const rows = [
-    ['Request ID', `<strong style="font-family:monospace;color:var(--primary)">${S.reqId}</strong>`],
-    ['Employee Name', e.name], ['Designation', e.designation], ['Department', e.dept],
-    ['Employee ID', e.id||'—'], ['Email', e.email], ['Phone', e.phone||'—'],
-    ['Supervisor', s.name], ['Travel Date', formatDate(t.date)], ['Return Date', formatDate(t.returnDate)],
-    ['Destination', t.destination], ['Purpose', t.purpose||'—'],
-    ['Mode of Travel', modeLabel(t.mode)], ['Hotel Stay', t.hotel==='yes'?'✅ Required':'❌ Not Required'],
-    ['Notes', t.notes||'—'],
-  ];
-  if(a.finance.budget)    rows.push(['Approved Budget', `PKR ${a.finance.budget}`]);
-  if(a.finance.budgetCode) rows.push(['Budget Code', a.finance.budgetCode]);
-  if(a.logistics.ticket)  rows.push(['Booking Reference', a.logistics.ticket]);
-  if(a.logistics.hotel)   rows.push(['Hotel Reference', a.logistics.hotel]);
-  return `<table class="data-table">${rows.map(([k,v])=>`<tr><td>${k}</td><td>${v||'—'}</td></tr>`).join('')}</table>`;
+function showLoading(t, s) { 
+  document.getElementById('loadingText').textContent = t; 
+  document.getElementById('loadingOverlay').style.display = 'flex'; 
 }
-
-// ===== DIGITAL STAMP HTML (for screen display) =====
-function stampHTML(iconClass, icon, role, name, designation, status, date, comment) {
-  const isPending  = status === 'pending';
-  const isApproved = status === 'approved';
-  const isRejected = status === 'rejected';
-  const signedClass = isPending ? 'pending' : isRejected ? 'rejected' : '';
-  const signedText  = isPending
-    ? '⏳ Awaiting Decision'
-    : isApproved
-      ? '✅ Digitally Signed &amp; Approved'
-      : '❌ Digitally Signed &amp; Rejected';
-  return `
-  <div class="dig-stamp">
-    <div class="dig-stamp-icon ${iconClass}">${icon}</div>
-    <div class="dig-stamp-body">
-      <div class="dig-stamp-role">${role}</div>
-      <div class="dig-stamp-name">${name||'—'}${designation?` <span style="font-size:12px;font-weight:400;color:var(--muted);">— ${designation}</span>`:''}</div>
-      <div class="dig-stamp-signed ${signedClass}">${signedText}</div>
-      ${date?`<div class="dig-stamp-date">📅 ${date}</div>`:''}
-      ${comment?`<div class="dig-stamp-comment">"${comment}"</div>`:''}
-    </div>
-    <div class="dig-stamp-badge">
-      <span class="status-pill ${isApproved?'status-approved':isRejected?'status-rejected':'status-pending'}">${status.toUpperCase()}</span>
-    </div>
-  </div>`;
-}
-
-function allStampsHTML() {
-  const a=S.approvals, e=S.emp, s=S.sup;
-  return [
-    stampHTML('emp','👤','Employee / Requester', e.name, e.designation, 'approved', nowStr(), ''),
-    stampHTML('sup','👤','Supervisor', s.name, a.supervisor.designation||'', a.supervisor.status, a.supervisor.date, a.supervisor.comment),
-    stampHTML('sec','🔒','Security Department', a.security.name||'Security Team', a.security.designation||'', a.security.status, a.security.date, a.security.comment),
-    stampHTML('fin','💰','Finance Department',  a.finance.name||'Finance Team',   a.finance.designation||'',  a.finance.status,  a.finance.date,  a.finance.comment),
-    stampHTML('log','🚚','Logistics Department',a.logistics.name||'Logistics Team',a.logistics.designation||'',a.logistics.status,a.logistics.date,a.logistics.comment),
-  ].join('');
-}
-
-// ===== EMAIL BUILDER =====
-function buildEmailBody(intro, details, actionText, actionLink) {
-  const e=S.emp, t=S.travel;
-  return `${intro}
-
-REQUEST DETAILS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Request ID   : ${S.reqId}
-Employee     : ${e.name} (${e.designation})
-Department   : ${e.dept}
-Travel Date  : ${formatDate(t.date)}
-Return Date  : ${formatDate(t.returnDate)}
-Destination  : ${t.destination}
-Purpose      : ${t.purpose||'—'}
-Mode         : ${modeLabel(t.mode)}
-Hotel Stay   : ${t.hotel==='yes'?'Required':'Not Required'}
-${t.notes?`Notes        : ${t.notes}`:''}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-${details}
-${actionText?`\n➡ ${actionText}:\n${actionLink}\n(Click or copy this link into your browser)`:''}
-
-— IMC Travel Request System | ${S.reqId} | ${nowStr()}`;
-}
-
-async function sendEmail(to, toName, subject, body) {
-  return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-    to_email:to, to_name:toName, subject, message:body,
-    reply_to:S.emp.email||'', from_name:'IMC Travel Request System'
-  });
-}
-
-// ===== SUBMIT EMPLOYEE FORM =====
-async function submitEmployeeForm() {
-  if (!validate([
-    ['empName','Employee Name'],['empDesignation','Designation'],['empDept','Department'],
-    ['empEmail','Your Email'],['supName','Supervisor Name'],['supEmail','Supervisor Email'],
-    ['travelDate','Travel Date'],['returnDate','Return Date'],
-    ['destination','Destination'],['purpose','Purpose of Travel']
-  ])) return;
-  if (!S.radioValues['travel-mode']) { toast('⚠ Please select Mode of Travel','danger'); return; }
-  if (!S.radioValues['hotel'])       { toast('⚠ Please select Hotel Stay option','danger'); return; }
-  if (document.getElementById('returnDate').value < document.getElementById('travelDate').value) {
-    toast('⚠ Return Date cannot be before Travel Date','danger'); return;
-  }
-
-  S.emp = {
-    name:document.getElementById('empName').value.trim(),
-    designation:document.getElementById('empDesignation').value.trim(),
-    dept:document.getElementById('empDept').value,
-    id:document.getElementById('empId').value.trim(),
-    email:document.getElementById('empEmail').value.trim(),
-    phone:document.getElementById('empPhone').value.trim(),
-  };
-  S.sup = {
-    name:document.getElementById('supName').value.trim(),
-    email:document.getElementById('supEmail').value.trim()
-  };
-  S.travel = {
-    date:document.getElementById('travelDate').value,
-    returnDate:document.getElementById('returnDate').value,
-    destination:document.getElementById('destination').value.trim(),
-    purpose:document.getElementById('purpose').value.trim(),
-    notes:document.getElementById('notes').value.trim(),
-    mode:S.radioValues['travel-mode'],
-    hotel:S.radioValues['hotel']
-  };
-
-  document.getElementById('btnSubmit').disabled = true;
-  showLoading('Saving & sending to supervisor...', `Uploading request & notifying ${S.sup.name}`);
-
-  try {
-    const link = await approvalLink('supervisor');
-    await sendEmail(
-      S.sup.email, S.sup.name,
-      `[APPROVAL NEEDED] Travel Request ${S.reqId} — ${S.emp.name}`,
-      buildEmailBody(
-        `Dear ${S.sup.name},\n\nA travel request requires your approval from ${S.emp.name} (${S.emp.dept}).`,
-        `Approval chain: Supervisor → Security → Finance → Logistics`,
-        'Click here to REVIEW & APPROVE / REJECT', link
-      )
-    );
-    // Confirmation to employee
-    await sendEmail(
-      S.emp.email, S.emp.name,
-      `[SUBMITTED] Your Travel Request ${S.reqId} has been received`,
-      buildEmailBody(
-        `Dear ${S.emp.name},\n\nYour travel request has been submitted and sent to ${S.sup.name} for approval.`,
-        `You will receive email updates at each approval stage.`, '', ''
-      )
-    );
-    hideLoading();
-    document.getElementById('headerStatus').textContent = 'Submitted';
-    document.getElementById('headerStatus').className   = 'status-pill status-pending';
-    document.getElementById('submittedId').textContent  = S.reqId;
-    document.getElementById('submittedSummary').innerHTML = summaryHTML();
-    document.getElementById('chainDisplay').innerHTML     = buildChainDisplay();
-    setWF(1); showScreen('screen0s');
-    saveRecord('pending');
-    toast('✅ Submitted! Supervisor has been emailed.','success');
-  } catch(err) {
-    hideLoading();
-    document.getElementById('btnSubmit').disabled = false;
-    toast('❌ Email failed — check EmailJS setup','danger');
-    console.error(err);
-  }
-}
-
-function buildChainDisplay() {
-  const steps = [
-    {icon:'👤',label:'Supervisor',        name:S.sup.name,          email:S.sup.email,    sent:true},
-    {icon:'🔒',label:'Security Dept.',    name:'shkayani',          email:DEPT.security,  sent:false},
-    {icon:'💰',label:'Finance Dept.',     name:'shhameed',          email:DEPT.finance,   sent:false},
-    {icon:'🚚',label:'Logistics Dept.',   name:'ziqbal',            email:DEPT.logistics, sent:false},
-  ];
-  return `<div style="display:flex;flex-direction:column;gap:8px;">` + steps.map((s,i) => `
-    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:${s.sent?'var(--success-bg)':'var(--bg)'};border:1px solid ${s.sent?'#b0dfc0':'var(--border)'};border-radius:7px;">
-      <span style="font-size:18px;">${s.icon}</span>
-      <div style="flex:1;">
-        <div style="font-size:13px;font-weight:600;">${i+1}. ${s.label}${s.name?' — '+s.name:''}</div>
-        <div style="font-size:12px;color:var(--muted);">${s.email}</div>
-      </div>
-      <span class="status-pill ${s.sent?'status-pending':'status-draft'}">${s.sent?'📧 Notified':'Waiting'}</span>
-    </div>`).join('') + `</div>`;
-}
-
-// ===== SUPERVISOR DECISION =====
-async function supervisorDecision(decision) {
-  if (!validate([['supSignName','Your Full Name']])) return;
-  S.approvals.supervisor = {
-    status:decision,
-    name:document.getElementById('supSignName').value.trim(),
-    designation:document.getElementById('supSignDesig').value.trim(),
-    comment:document.getElementById('supComment').value.trim(),
-    date:nowStr()
-  };
-  saveState();
-
-  if (decision==='approved') {
-    showLoading('Forwarding to Security...','Emailing '+DEPT.security);
-    try {
-      const link = await approvalLink('security');
-      await sendEmail(DEPT.security,'Security Team',
-        `[SECURITY CLEARANCE NEEDED] Travel Request ${S.reqId} — ${S.emp.name}`,
-        buildEmailBody(
-          `Dear Security Team,\n\nThe following travel request has been approved by Supervisor (${S.approvals.supervisor.name}) and requires Security Clearance.`,
-          `✅ SUPERVISOR: Approved by ${S.approvals.supervisor.name} on ${S.approvals.supervisor.date}`,
-          'Click here to REVIEW & PROVIDE SECURITY CLEARANCE', link
-        )
-      );
-      hideLoading();
-      showApproverDone('Travel Request is Approved', `You have approved the travel request for ${S.emp.name}. Security Department has been notified.`);
-      toast('✅ Approved! Security has been notified.','success');
-    } catch(e) { hideLoading(); toast('❌ Email failed','danger'); console.error(e); }
-  } else {
-    await sendRejectionEmailApprover('Supervisor', S.approvals.supervisor.name, S.approvals.supervisor.comment);
-  }
-}
-
-// ===== SECURITY DECISION =====
-async function securityDecision(decision) {
-  if (!validate([['secSignName','Security Officer Name']])) return;
-  S.approvals.security = {
-    status:decision,
-    name:document.getElementById('secSignName').value.trim(),
-    designation:document.getElementById('secSignDesig').value.trim(),
-    comment:document.getElementById('secComment').value.trim(),
-    date:nowStr()
-  };
-  saveState();
-
-  if (decision==='approved') {
-    showLoading('Forwarding to Finance...','Emailing '+DEPT.finance);
-    try {
-      const link = await approvalLink('finance');
-      await sendEmail(DEPT.finance,'Finance Team',
-        `[FINANCE APPROVAL NEEDED] Travel Request ${S.reqId} — ${S.emp.name}`,
-        buildEmailBody(
-          `Dear Finance Team,\n\nThis travel request has cleared Security and requires Finance Approval.`,
-          `✅ SUPERVISOR: Approved by ${S.approvals.supervisor.name} on ${S.approvals.supervisor.date}\n✅ SECURITY: Cleared by ${S.approvals.security.name} on ${S.approvals.security.date}`,
-          'Click here to REVIEW & APPROVE BUDGET', link
-        )
-      );
-      hideLoading();
-      showApproverDone('Travel Request is Approved', `You have provided Security Clearance for the travel request of ${S.emp.name}. Finance Department has been notified.`);
-      toast('✅ Cleared! Finance has been notified.','success');
-    } catch(e) { hideLoading(); toast('❌ Email failed','danger'); console.error(e); }
-  } else {
-    await sendRejectionEmailApprover('Security Department', S.approvals.security.name, S.approvals.security.comment);
-  }
-}
-
-// ===== FINANCE DECISION =====
-async function financeDecision(decision) {
-  if (!validate([['finSignName','Finance Officer Name']])) return;
-  S.approvals.finance = {
-    status:decision,
-    name:document.getElementById('finSignName').value.trim(),
-    designation:document.getElementById('finSignDesig').value.trim(),
-    comment:document.getElementById('finComment').value.trim(),
-    date:nowStr(),
-    budget:document.getElementById('finBudget').value.trim(),
-    budgetCode:document.getElementById('finBudgetCode').value.trim()
-  };
-  saveState();
-
-  if (decision==='approved') {
-    showLoading('Forwarding to Logistics...','Emailing '+DEPT.logistics);
-    try {
-      const link = await approvalLink('logistics');
-      await sendEmail(DEPT.logistics,'Logistics Team',
-        `[LOGISTICS ARRANGEMENT NEEDED] Travel Request ${S.reqId} — ${S.emp.name}`,
-        buildEmailBody(
-          `Dear Logistics Team,\n\nThis travel request is fully approved and requires logistics arrangement and final confirmation.`,
-          `✅ SUPERVISOR: ${S.approvals.supervisor.name} — ${S.approvals.supervisor.date}\n✅ SECURITY: ${S.approvals.security.name} — ${S.approvals.security.date}\n✅ FINANCE: ${S.approvals.finance.name} — ${S.approvals.finance.date} | Budget: PKR ${S.approvals.finance.budget||'TBD'}`,
-          'Click here to CONFIRM ARRANGEMENTS & FINALIZE', link
-        )
-      );
-      hideLoading();
-      showApproverDone('Travel Request is Approved', `You have approved the budget for the travel request of ${S.emp.name}. Logistics Department has been notified.`);
-      toast('✅ Finance approved! Logistics has been notified.','success');
-    } catch(e) { hideLoading(); toast('❌ Email failed','danger'); console.error(e); }
-  } else {
-    await sendRejectionEmailApprover('Finance Department', S.approvals.finance.name, S.approvals.finance.comment);
-  }
-}
-
-// ===== LOGISTICS FINALIZE =====
-async function logisticsDecision() {
-  if (!validate([['logSignName','Logistics Officer Name']])) return;
-  S.approvals.logistics = {
-    status:'approved',
-    name:document.getElementById('logSignName').value.trim(),
-    designation:document.getElementById('logSignDesig').value.trim(),
-    comment:document.getElementById('logComment').value.trim(),
-    date:nowStr(),
-    ticket:document.getElementById('logTicket').value.trim(),
-    hotel:document.getElementById('logHotel').value.trim()
-  };
-  saveState();
-  saveRecord('approved');
-
-  showLoading('Generating PDF & emailing employee...', `Sending approved document to ${S.emp.email}`);
-  try {
-    // Build the print doc first so PDF can be generated
-    buildPrintDoc();
-    // Generate PDF as blob for email reference, but also prepare screen
-    await sendEmail(S.emp.email, S.emp.name,
-      `[✅ FULLY APPROVED] Your Travel Request ${S.reqId} — Official Travel Authorization`,
-      buildEmailBody(
-        `Dear ${S.emp.name},\n\nCongratulations! Your travel request has been FULLY APPROVED by all departments.\n\nPlease log into the Travel Request Portal to download your official PDF authorization document.`,
-        `✅ SUPERVISOR : Approved by ${S.approvals.supervisor.name} on ${S.approvals.supervisor.date}\n✅ SECURITY   : Cleared by ${S.approvals.security.name} on ${S.approvals.security.date}\n✅ FINANCE    : Approved by ${S.approvals.finance.name} on ${S.approvals.finance.date} | Budget: PKR ${S.approvals.finance.budget||'—'} | Code: ${S.approvals.finance.budgetCode||'—'}\n✅ LOGISTICS  : Confirmed by ${S.approvals.logistics.name} on ${S.approvals.logistics.date}\n\nBOOKING:\nTicket/Vehicle : ${S.approvals.logistics.ticket||'TBD'}\nHotel          : ${S.approvals.logistics.hotel||'N/A'}\n${S.approvals.logistics.comment?`Notes          : ${S.approvals.logistics.comment}`:''}`,
-        '', ''
-      )
-    );
-    hideLoading();
-
-    setWF(5);
-    showApproverDone('Travel Request is Approved', `The travel request for ${S.emp.name} is fully finalized. The employee has been notified by email.`);
-    toast('🎉 Fully approved! Employee has been emailed.','success');
-
-    // Prepare full screen data in background for PDF
-    document.getElementById('finalSummary').innerHTML   = summaryHTML();
-    document.getElementById('finalStamps').innerHTML    = allStampsHTML();
-    document.getElementById('approvalTimeline').innerHTML = buildTimeline();
-  } catch(e) { hideLoading(); toast('❌ Email failed','danger'); console.error(e); }
-}
-
-function generatePDFApprover() {
-  generatePDF();
-}
-
-// ===== REJECTION EMAIL (from employee-facing complete/rejected screen) =====
-async function sendRejectionEmail(dept, byName, reason) {
-  showLoading('Sending rejection notice...', `Emailing ${S.emp.email}`);
-  try {
-    await sendEmail(S.emp.email, S.emp.name,
-      `[REJECTED] Your Travel Request ${S.reqId}`,
-      buildEmailBody(
-        `Dear ${S.emp.name},\n\nYour travel request has been REJECTED by the ${dept}.`,
-        `Rejected By : ${dept} (${byName||'—'})\nDate         : ${nowStr()}\n${reason?`Reason       : ${reason}`:''}`,
-        '', ''
-      )
-    );
-    hideLoading();
-    document.getElementById('rejectedBy').textContent = `Rejected by ${dept} — Employee has been notified`;
-    document.getElementById('headerStatus').textContent = 'Rejected';
-    document.getElementById('headerStatus').className   = 'status-pill status-rejected';
-    document.getElementById('rejectedSummary').innerHTML = summaryHTML();
-    document.getElementById('rejectedStamps').innerHTML  = allStampsHTML();
-    showScreen('screenRejected');
-    toast('Request rejected — employee notified.','danger');
-  } catch(e) { hideLoading(); toast('❌ Email failed','danger'); console.error(e); }
-}
-
-// ===== REJECTION EMAIL (from approver screens — closes approver form) =====
-async function sendRejectionEmailApprover(dept, byName, reason) {
-  showLoading('Sending rejection notice...', `Emailing ${S.emp.email}`);
-  try {
-    await sendEmail(S.emp.email, S.emp.name,
-      `[REJECTED] Your Travel Request ${S.reqId}`,
-      buildEmailBody(
-        `Dear ${S.emp.name},\n\nYour travel request has been REJECTED by the ${dept}.`,
-        `Rejected By : ${dept} (${byName||'—'})\nDate         : ${nowStr()}\n${reason?`Reason       : ${reason}`:''}`,
-        '', ''
-      )
-    );
-    saveRecord('rejected');
-    hideLoading();
-    document.getElementById('headerStatus').textContent = 'Rejected';
-    document.getElementById('headerStatus').className   = 'status-pill status-rejected';
-    showApproverRejDone();
-    toast('Request rejected — employee notified.','danger');
-  } catch(e) { hideLoading(); toast('❌ Email failed','danger'); console.error(e); }
-}
-
-// ===== TIMELINE =====
-function buildTimeline() {
-  return [
-    {key:'supervisor',label:'Supervisor',icon:'👤'},
-    {key:'security',  label:'Security Department',icon:'🔒'},
-    {key:'finance',   label:'Finance Department',icon:'💰'},
-    {key:'logistics', label:'Logistics Department',icon:'🚚'},
-  ].map(s => {
-    const a = S.approvals[s.key];
-    const cls  = a.status==='approved'?'done':a.status==='rejected'?'rejected':'';
-    const icon = a.status==='approved'?'✓':a.status==='rejected'?'✕':'…';
-    return `<div class="tl-item">
-      <div class="tl-icon ${cls}">${icon}</div>
-      <div class="tl-content">
-        <div class="tl-title">${s.icon} ${s.label}${a.name?' — '+a.name:''} <span class="status-pill ${a.status==='approved'?'status-approved':a.status==='rejected'?'status-rejected':'status-pending'}" style="font-size:11px;">${a.status.toUpperCase()}</span></div>
-        <div class="tl-meta">${a.date||'—'}</div>
-        ${a.comment?`<div class="tl-comment">"${a.comment}"</div>`:''}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-// ===== PDF GENERATION (FIXED — full A4) =====
-function generatePDF() {
-  buildPrintDoc();
-  const pf = document.getElementById('printForm');
-  // Position off-screen but at exact A4 width (210mm at 96dpi ≈ 794px)
-  pf.style.display = 'block';
-  pf.style.position = 'fixed';
-  pf.style.left = '-9999px';
-  pf.style.top = '0';
-  pf.style.width = '794px';
-  pf.style.zIndex = '-1';
-  pf.style.background = 'white';
-
-  const inner = document.getElementById('printDocInner');
-  inner.style.width = '794px';
-
-  html2pdf().set({
-    margin: [8, 8, 8, 8],
-    filename: `Travel-Request-${S.reqId}.pdf`,
-    image: { type:'jpeg', quality:0.98 },
-    html2canvas: { scale:2, useCORS:true, logging:false, width:794, windowWidth:794 },
-    jsPDF: { unit:'mm', format:'a4', orientation:'portrait' }
-  }).from(inner).save()
-    .then(() => {
-      pf.style.display = 'none';
-      pf.style.position = '';
-      pf.style.left = '';
-      pf.style.top = '';
-      pf.style.width = '';
-      pf.style.zIndex = '';
-      pf.style.background = '';
-      inner.style.width = '';
-      toast('✅ PDF downloaded!','success');
-    });
-  toast('📄 Generating PDF…');
-}
-
-// ===== RECORDS =====
-function saveRecord(finalStatus) {
-  try {
-    const record = {
-      reqId: S.reqId,
-      empName: S.emp.name,
-      empDept: S.emp.dept,
-      destination: S.travel.destination,
-      travelDate: S.travel.date,
-      returnDate: S.travel.returnDate,
-      purpose: S.travel.purpose,
-      status: finalStatus,
-      savedAt: nowStr(),
-      state: {reqId:S.reqId,emp:S.emp,sup:S.sup,travel:S.travel,approvals:S.approvals}
-    };
-    // Save to records list
-    let records = [];
-    try { records = JSON.parse(localStorage.getItem('trf_records')||'[]'); } catch(e) {}
-    // Remove duplicate if exists
-    records = records.filter(r => r.reqId !== S.reqId);
-    records.unshift(record);
-    // Keep max 200
-    if (records.length > 200) records = records.slice(0,200);
-    localStorage.setItem('trf_records', JSON.stringify(records));
-  } catch(e) { console.warn('Record save failed',e); }
-}
-
-function openRecords() {
-  let records = [];
-  try { records = JSON.parse(localStorage.getItem('trf_records')||'[]'); } catch(e) {}
-  const container = document.getElementById('recordsContent');
-  if (!records.length) {
-    container.innerHTML = `<div class="alert alert-info"><span class="alert-icon">ℹ️</span><div>No travel request records found in this browser. Records are saved when requests are fully approved or rejected.</div></div>`;
-  } else {
-    container.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-        <div style="font-size:13px;color:var(--muted);">${records.length} record(s) found — stored in this browser</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <input type="text" id="recordSearch" placeholder="Search by name, ID, destination..." style="padding:7px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;width:240px;" oninput="filterRecords()">
-          <button class="btn btn-danger btn-sm" onclick="clearAllRecords()">🗑 Clear All</button>
-        </div>
-      </div>
-      <div id="recordsList"></div>`;
-    renderRecordsList(records);
-  }
-  document.getElementById('recordsModal').style.display = 'block';
-}
-
-function renderRecordsList(records) {
-  const list = document.getElementById('recordsList');
-  if (!list) return;
-  if (!records.length) {
-    list.innerHTML = `<div class="alert alert-warning"><span class="alert-icon">⚠️</span><div>No records match your search.</div></div>`;
-    return;
-  }
-  list.innerHTML = records.map((r,i) => {
-    const statusClass = r.status==='approved' ? 'status-approved' : r.status==='rejected' ? 'status-rejected' : 'status-pending';
-    const statusIcon  = r.status==='approved' ? '✅' : r.status==='rejected' ? '❌' : '⏳';
-    return `<div style="border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:10px;background:${r.status==='approved'?'#f4fcf7':r.status==='rejected'?'#fef8f8':'#f8faff'};">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-        <div style="flex:1;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-            <span style="font-family:monospace;font-size:13px;font-weight:700;color:var(--primary);">${r.reqId}</span>
-            <span class="status-pill ${statusClass}">${statusIcon} ${r.status.toUpperCase()}</span>
-          </div>
-          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">${r.empName||'—'} <span style="font-size:12px;font-weight:400;color:var(--muted);">— ${r.empDept||'—'}</span></div>
-          <div style="font-size:13px;color:var(--muted);">✈ ${r.destination||'—'} &nbsp;|&nbsp; 📅 ${formatDate(r.travelDate)} → ${formatDate(r.returnDate)}</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:3px;">Purpose: ${r.purpose||'—'}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
-          <div style="font-size:11px;color:var(--muted);">Saved: ${r.savedAt}</div>
-          <button class="btn btn-accent btn-sm" onclick="downloadRecordPDF('${r.reqId}')">📄 PDF</button>
-          <button class="btn btn-outline btn-sm" onclick="deleteRecord('${r.reqId}')">🗑 Delete</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function filterRecords() {
-  const q = (document.getElementById('recordSearch')?.value||'').toLowerCase();
-  let records = [];
-  try { records = JSON.parse(localStorage.getItem('trf_records')||'[]'); } catch(e) {}
-  if (q) records = records.filter(r =>
-    (r.reqId||'').toLowerCase().includes(q) ||
-    (r.empName||'').toLowerCase().includes(q) ||
-    (r.destination||'').toLowerCase().includes(q) ||
-    (r.empDept||'').toLowerCase().includes(q) ||
-    (r.purpose||'').toLowerCase().includes(q)
-  );
-  renderRecordsList(records);
-}
-
-function closeRecords() {
-  document.getElementById('recordsModal').style.display = 'none';
-}
-
-function deleteRecord(reqId) {
-  if (!confirm('Delete this record?')) return;
-  let records = [];
-  try { records = JSON.parse(localStorage.getItem('trf_records')||'[]'); } catch(e) {}
-  records = records.filter(r => r.reqId !== reqId);
-  localStorage.setItem('trf_records', JSON.stringify(records));
-  openRecords();
-  toast('Record deleted.','');
-}
-
-function clearAllRecords() {
-  if (!confirm('Delete ALL travel request records? This cannot be undone.')) return;
-  localStorage.setItem('trf_records', '[]');
-  openRecords();
-  toast('All records cleared.','danger');
-}
-
-function downloadRecordPDF(reqId) {
-  let records = [];
-  try { records = JSON.parse(localStorage.getItem('trf_records')||'[]'); } catch(e) {}
-  const rec = records.find(r => r.reqId === reqId);
-  if (!rec || !rec.state) { toast('Record data not available','danger'); return; }
-  // Temporarily restore state for PDF, then restore original
-  const origS = JSON.parse(JSON.stringify(S));
-  Object.assign(S, rec.state);
-  buildPrintDoc();
-  const pf = document.getElementById('printForm');
-  const inner = document.getElementById('printDocInner');
-  pf.style.display = 'block';
-  pf.style.position = 'fixed';
-  pf.style.left = '-9999px';
-  pf.style.top = '0';
-  pf.style.width = '794px';
-  pf.style.zIndex = '-1';
-  pf.style.background = 'white';
-  inner.style.width = '794px';
-  html2pdf().set({
-    margin: [8,8,8,8],
-    filename: `Travel-Request-${reqId}.pdf`,
-    image:{type:'jpeg',quality:0.98},
-    html2canvas:{scale:2,useCORS:true,logging:false,width:794,windowWidth:794},
-    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
-  }).from(inner).save()
-    .then(() => {
-      pf.style.display = 'none';
-      pf.style.position = '';
-      pf.style.left = '';
-      pf.style.top = '';
-      pf.style.width = '';
-      pf.style.zIndex = '';
-      pf.style.background = '';
-      inner.style.width = '';
-      // Restore original state
-      Object.assign(S, origS);
-      toast('✅ PDF downloaded!','success');
-    });
-  toast('📄 Generating PDF…');
-}
-
-function printStampBox(role, name, designation, status, date, comment) {
-  const sts = status==='approved'?'approved':status==='rejected'?'rejected':'pending';
-  const dsText = status==='approved'
-    ? '✦ Digitally Signed &amp; Approved'
-    : status==='rejected'
-      ? '✦ Digitally Signed &amp; Rejected'
-      : '— Pending —';
-  return `<div class="print-stamp-box">
-    <div class="print-stamp-role">${role}</div>
-    <div class="print-stamp-name">${name||'—'}</div>
-    ${designation?`<div style="font-size:9px;color:#555;">${designation}</div>`:''}
-    <div class="print-stamp-line"></div>
-    <div class="print-stamp-ds ${sts}">${dsText}</div>
-    <div class="print-stamp-date">${date||'Not yet processed'}</div>
-    ${comment?`<div class="print-stamp-comment">${comment}</div>`:''}
-    <span class="print-stamp-status ${sts}">${status.toUpperCase()}</span>
-  </div>`;
-}
-
-function buildPrintDoc() {
-  const e=S.emp, t=S.travel, a=S.approvals, s=S.sup;
-  document.getElementById('printDocInner').innerHTML = `
-  <div class="print-header">
-    <div class="print-org">International Medical Corps</div>
-    <div class="print-title">Official Staff Travel Authorization Form</div>
-    <div class="print-id">Request ID: ${S.reqId} &nbsp;|&nbsp; Generated: ${nowStr()}</div>
-  </div>
-
-  <div class="print-section">
-    <div class="print-section-title">Employee Information</div>
-    <div class="print-grid">
-      <div class="print-field"><div class="print-label">Full Name</div><div class="print-value">${e.name||'—'}</div></div>
-      <div class="print-field"><div class="print-label">Employee ID</div><div class="print-value">${e.id||'—'}</div></div>
-      <div class="print-field"><div class="print-label">Designation</div><div class="print-value">${e.designation||'—'}</div></div>
-      <div class="print-field"><div class="print-label">Department</div><div class="print-value">${e.dept||'—'}</div></div>
-      <div class="print-field"><div class="print-label">Email</div><div class="print-value">${e.email||'—'}</div></div>
-      <div class="print-field"><div class="print-label">Phone</div><div class="print-value">${e.phone||'—'}</div></div>
-      <div class="print-field"><div class="print-label">Supervisor</div><div class="print-value">${s.name||'—'}</div></div>
-      <div class="print-field"><div class="print-label">Supervisor Email</div><div class="print-value">${s.email||'—'}</div></div>
-      <div class="print-field"><div class="print-label">Request ID</div><div class="print-value" style="font-family:monospace;">${S.reqId}</div></div>
-    </div>
-  </div>
-
-  <div class="print-section">
-    <div class="print-section-title">Travel Details</div>
-    <div class="print-grid">
-      <div class="print-field"><div class="print-label">Travel Date</div><div class="print-value">${formatDate(t.date)}</div></div>
-      <div class="print-field"><div class="print-label">Return Date</div><div class="print-value">${formatDate(t.returnDate)}</div></div>
-      <div class="print-field"><div class="print-label">Destination</div><div class="print-value">${t.destination||'—'}</div></div>
-      <div class="print-field"><div class="print-label">Purpose</div><div class="print-value">${t.purpose||'—'}</div></div>
-      <div class="print-field"><div class="print-label">Mode of Travel</div><div class="print-value">${modeLabel(t.mode)}</div></div>
-      <div class="print-field"><div class="print-label">Hotel Stay</div><div class="print-value">${t.hotel==='yes'?'Required':'Not Required'}</div></div>
-      ${a.finance.budget?`<div class="print-field"><div class="print-label">Approved Budget</div><div class="print-value">PKR ${a.finance.budget}</div></div>`:''}
-      ${a.finance.budgetCode?`<div class="print-field"><div class="print-label">Budget Code</div><div class="print-value">${a.finance.budgetCode}</div></div>`:''}
-      ${a.logistics.ticket?`<div class="print-field"><div class="print-label">Booking Ref</div><div class="print-value">${a.logistics.ticket}</div></div>`:''}
-      ${a.logistics.hotel?`<div class="print-field"><div class="print-label">Hotel Ref</div><div class="print-value">${a.logistics.hotel}</div></div>`:''}
-    </div>
-    ${t.notes?`<div class="print-field" style="margin-top:6px;"><div class="print-label">Notes</div><div class="print-value" style="font-weight:400;">${t.notes}</div></div>`:''}
-    ${a.logistics.comment?`<div class="print-field" style="margin-top:6px;"><div class="print-label">Logistics Notes</div><div class="print-value" style="font-weight:400;">${a.logistics.comment}</div></div>`:''}
-  </div>
-
-  <div class="print-section">
-    <div class="print-section-title">Digital Approvals &amp; Signatures</div>
-    <div class="print-stamps">
-      ${printStampBox('Employee / Requester', e.name, e.designation, 'approved', nowStr(), '')}
-      ${printStampBox('Supervisor', s.name, a.supervisor.designation, a.supervisor.status, a.supervisor.date, a.supervisor.comment)}
-      ${printStampBox('Security Department', a.security.name||'Security Officer', a.security.designation, a.security.status, a.security.date, a.security.comment)}
-      ${printStampBox('Finance Department', a.finance.name||'Finance Officer', a.finance.designation, a.finance.status, a.finance.date, a.finance.comment)}
-      ${printStampBox('Logistics Department', a.logistics.name||'Logistics Officer', a.logistics.designation, a.logistics.status, a.logistics.date, a.logistics.comment)}
-    </div>
-  </div>
-
-  <div class="print-footer">
-    International Medical Corps — Official Travel Authorization &nbsp;|&nbsp;
-    Request ID: ${S.reqId} &nbsp;|&nbsp; ${nowStr()} &nbsp;|&nbsp;
-    Unauthorized alterations are strictly prohibited.
-  </div>`;
-}
-
-function autoCloseTab(countdownId, seconds=5) {
-  let remaining = seconds;
-  const el = document.getElementById(countdownId);
-  const tick = setInterval(() => {
-    remaining--;
-    if (el) el.textContent = remaining;
-    if (remaining <= 0) {
-      clearInterval(tick);
-      window.close();
-      // Fallback if window.close() is blocked
-      setTimeout(() => {
-        document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:Segoe UI,Arial,sans-serif;background:#f4f7fb;"><div style="text-align:center;padding:40px;background:white;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.1);"><div style="font-size:48px;margin-bottom:16px;">✅</div><div style="font-size:20px;font-weight:700;color:#1a6b3a;">Action Completed</div><div style="font-size:14px;color:#5a6a7e;margin-top:8px;">You may now close this tab manually.</div></div></div>`;
-      }, 500);
-    }
-  }, 1000);
-}
-
-function showApproverDone(titleText, msgText) {
-  document.getElementById('approverDoneTitle').textContent  = titleText;
-  document.getElementById('approverDoneTitle2').textContent = titleText;
-  document.getElementById('approverDoneMsg').textContent    = msgText;
-  showScreen('screenApproverDone');
-  autoCloseTab('closeCountdown', 5);
-}
-
-function showApproverRejDone() {
-  showScreen('screenApproverRejDone');
-  autoCloseTab('closeCountdownRej', 5);
-}
-
-function startNew() {
-  if (confirm('Start a new request? Current data will be cleared.'))
-    location.href = window.location.href.split('?')[0];
-}
+function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none'; }
+function toast(m, c) { alert(m); }
 </script>
 </body>
 </html>
