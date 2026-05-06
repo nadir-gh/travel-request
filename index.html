@@ -201,15 +201,15 @@ textarea { resize:vertical; min-height:80px; }
   body > *:not(#printForm) { display:none !important; }
   #printForm { display:block !important; }
 }
-.print-doc { max-width:800px; margin:0 auto; padding:36px 40px; background:white; font-family:'Times New Roman',serif; color:#111; font-size:13px; }
+.print-doc { width:100%; padding:18px 22px; background:white; font-family:'Times New Roman',serif; color:#111; font-size:13px; box-sizing:border-box; }
 .print-header { text-align:center; border-bottom:3px double #1a3a5c; padding-bottom:14px; margin-bottom:18px; }
-.print-org   { font-size:18px; font-weight:700; color:#1a3a5c; letter-spacing:1px; text-transform:uppercase; }
-.print-title { font-size:14px; font-weight:600; margin:5px 0 3px; }
+.print-org   { font-size:20px; font-weight:700; color:#1a3a5c; letter-spacing:1px; text-transform:uppercase; }
+.print-title { font-size:15px; font-weight:600; margin:5px 0 3px; }
 .print-id    { font-size:11px; color:#666; font-family:monospace; }
 .print-section { margin-bottom:16px; }
 .print-section-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#1a3a5c; border-bottom:1px solid #c0c8d4; padding-bottom:4px; margin-bottom:10px; }
-.print-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px 20px; }
-.print-field { display:flex; flex-direction:column; margin-bottom:4px; }
+.print-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px 16px; }
+.print-field { display:flex; flex-direction:column; margin-bottom:5px; }
 .print-label { font-size:9px; color:#666; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:1px; }
 .print-value { font-size:12px; font-weight:600; border-bottom:1px solid #ccc; padding:2px 0; min-height:20px; }
 
@@ -218,13 +218,13 @@ textarea { resize:vertical; min-height:80px; }
 .print-stamp-box {
   border:1.5px solid #b0b8c8;
   border-radius:6px;
-  padding:10px 12px;
+  padding:12px 14px;
   text-align:center;
   background:#f8faff;
   page-break-inside:avoid;
 }
 .print-stamp-role   { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:#1a3a5c; }
-.print-stamp-name   { font-size:12px; font-weight:700; margin:4px 0 2px; font-family:'Times New Roman',serif; }
+.print-stamp-name   { font-size:13px; font-weight:700; margin:4px 0 2px; font-family:'Times New Roman',serif; }
 .print-stamp-line   { border-top:1px dashed #aaa; margin:6px 0 4px; }
 .print-stamp-ds     { font-size:10px; font-style:italic; color:#1a5c3a; font-weight:600; }
 .print-stamp-ds.rejected { color:#8b1a1a; }
@@ -652,30 +652,28 @@ textarea { resize:vertical; min-height:80px; }
     </div>
   </div>
 
-  <!-- ===== SCREEN: APPROVER PASTE TOKEN (different device fallback) ===== -->
-  <div class="screen" id="screenPaste">
+  <!-- ===== SCREEN: NO DATA (different device) ===== -->
+  <div class="screen" id="screenNoData">
     <div class="panel">
-      <div class="panel-header accent">
-        <div class="panel-icon">🔗</div>
+      <div class="panel-header danger">
+        <div class="panel-icon">⚠️</div>
         <div>
-          <div class="panel-title">Load Approval Request</div>
-          <div class="panel-subtitle">You are opening this on a different device or browser</div>
+          <div class="panel-title">Request Not Found</div>
+          <div class="panel-subtitle">This approval link must be opened on the same device and browser where it was submitted</div>
         </div>
       </div>
       <div class="panel-body">
-        <div class="alert alert-warning">
+        <div class="alert alert-danger">
           <span class="alert-icon">⚠️</span>
           <div>
-            <strong>Request data not found in this browser.</strong><br>
-            Please copy the <strong>Request Data Code</strong> from the bottom of your approval email and paste it below to load the request.
+            <strong>Unable to load the travel request.</strong><br>
+            Please open this approval link on the <strong>same computer and browser</strong> where the original travel request was submitted. If you are the approver, please contact the employee or administrator to resubmit the request.
           </div>
         </div>
-        <div class="field-group" style="margin-bottom:16px;">
-          <label>Request Data Code (from your email)</label>
-          <textarea id="pasteToken" style="min-height:120px;font-family:monospace;font-size:11px;" placeholder="Paste the data code from your email here..."></textarea>
-        </div>
-        <div class="btn-bar">
-          <button class="btn btn-primary" onclick="loadFromPaste()">🔓 Load Request</button>
+        <div style="text-align:center;padding:20px 0;">
+          <div style="font-size:48px;margin-bottom:12px;">🔒</div>
+          <div style="font-size:15px;font-weight:600;color:var(--danger);">Access Denied — Wrong Device or Browser</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:8px;">For security, request data is stored only on the originating device.</div>
         </div>
       </div>
     </div>
@@ -687,21 +685,16 @@ textarea { resize:vertical; min-height:80px; }
       <div class="panel-header success">
         <div class="panel-icon">✅</div>
         <div>
-          <div class="panel-title" id="approverDoneTitle">Action Recorded</div>
-          <div class="panel-subtitle">Your decision has been saved and the next department has been notified</div>
+          <div class="panel-title" id="approverDoneTitle">Travel Request is Approved</div>
+          <div class="panel-subtitle">This tab will close automatically</div>
         </div>
       </div>
       <div class="panel-body">
-        <div class="alert alert-success" id="approverDoneMsg">
-          <span class="alert-icon">✅</span>
-          <div>Your approval has been recorded and the next step has been notified automatically.</div>
-        </div>
-        <div id="approverDoneSummary"></div>
-        <div class="divider"></div>
-        <div style="text-align:center;padding:20px 0;">
-          <div style="font-size:48px;margin-bottom:12px;">🔒</div>
-          <div style="font-size:16px;font-weight:600;color:var(--primary);margin-bottom:8px)">This form is now closed.</div>
-          <div style="font-size:14px;color:var(--muted);">You may safely close this browser tab.</div>
+        <div style="text-align:center;padding:48px 20px;">
+          <div style="font-size:72px;margin-bottom:20px;">✅</div>
+          <div style="font-size:24px;font-weight:700;color:var(--success);margin-bottom:12px;" id="approverDoneTitle2">Travel Request is Approved</div>
+          <div style="font-size:15px;color:var(--muted);margin-bottom:8px;" id="approverDoneMsg">Your decision has been recorded and the next department has been notified.</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:16px;">This tab is closing in <strong id="closeCountdown">5</strong> seconds…</div>
         </div>
       </div>
     </div>
@@ -713,21 +706,16 @@ textarea { resize:vertical; min-height:80px; }
       <div class="panel-header danger">
         <div class="panel-icon">❌</div>
         <div>
-          <div class="panel-title">Rejection Recorded</div>
-          <div class="panel-subtitle">The employee has been notified of the rejection</div>
+          <div class="panel-title">Travel Request is Rejected</div>
+          <div class="panel-subtitle">This tab will close automatically</div>
         </div>
       </div>
       <div class="panel-body">
-        <div class="alert alert-danger">
-          <span class="alert-icon">❌</span>
-          <div>Your rejection has been recorded and the employee has been notified by email.</div>
-        </div>
-        <div id="approverRejSummary"></div>
-        <div class="divider"></div>
-        <div style="text-align:center;padding:20px 0;">
-          <div style="font-size:48px;margin-bottom:12px;">🔒</div>
-          <div style="font-size:16px;font-weight:600;color:var(--danger);margin-bottom:8px;">This form is now closed.</div>
-          <div style="font-size:14px;color:var(--muted);">You may safely close this browser tab.</div>
+        <div style="text-align:center;padding:48px 20px;">
+          <div style="font-size:72px;margin-bottom:20px;">❌</div>
+          <div style="font-size:24px;font-weight:700;color:var(--danger);margin-bottom:12px;">Travel Request is Rejected</div>
+          <div style="font-size:15px;color:var(--muted);margin-bottom:8px;">The employee has been notified of the rejection by email.</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:16px;">This tab is closing in <strong id="closeCountdownRej">5</strong> seconds…</div>
         </div>
       </div>
     </div>
@@ -762,8 +750,8 @@ const EMAILJS_TEMPLATE_ID = 'template_y7ihtnf';
 // ===== FIXED DEPARTMENT EMAILS =====
 const DEPT = {
   security:  'shkayani@internationalmedicalcorps.org',
-  finance:   'shhameed@internationalmedicalcorps.org',
-  logistics: 'ziqbal@internationalmedicalcorps.org'
+  finance:   'mshahzad@internationalmedicalcorps.org',
+  logistics: 'samiullah@internationalmedicalcorps.org'
 };
 
 // ===== STATE =====
@@ -797,7 +785,14 @@ window.addEventListener('load', () => {
 // ===== ID GENERATION =====
 function generateId() {
   const n = new Date();
-  return `TRV-${n.getFullYear().toString().slice(2)}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}-${Math.floor(1000+Math.random()*9000)}`;
+  const datePart = `${n.getFullYear().toString().slice(2)}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}`;
+  let counter = 1;
+  try {
+    const stored = parseInt(localStorage.getItem('trf_counter') || '0', 10);
+    counter = stored + 1;
+    localStorage.setItem('trf_counter', String(counter));
+  } catch(e) {}
+  return `TRF-${datePart}-${String(counter).padStart(6,'0')}`;
 }
 
 // ===== RADIO =====
@@ -889,9 +884,9 @@ function handleApprovalLink(stage, reqId) {
     restoreState(data);
     renderStage(stage);
   } else {
-    // Different device — show paste screen
-    document.getElementById('pasteToken').value = '';
-    showScreen('screenPaste');
+    // Data not found — must open on the same device/browser that submitted
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screenNoData').classList.add('active');
   }
 }
 
@@ -981,9 +976,6 @@ function allStampsHTML() {
 // ===== EMAIL BUILDER =====
 function buildEmailBody(intro, details, actionText, actionLink) {
   const e=S.emp, t=S.travel;
-  const fallback = actionLink
-    ? `\n\n──────────────────────────────────────\n⚠ IF THE LINK DOES NOT WORK (opening on a different device):\n1. Open: ${window.location.href.split('?')[0]}?stage=${actionLink.split('stage=')[1]?.split('&')[0]||''}&req=${S.reqId}\n2. Paste this Request Data Code when prompted:\n\n${buildCompactToken()}\n──────────────────────────────────────`
-    : '';
   return `${intro}
 
 REQUEST DETAILS:
@@ -1001,7 +993,7 @@ ${t.notes?`Notes        : ${t.notes}`:''}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ${details}
-${actionText?`\n➡ ${actionText}:\n${actionLink}\n(Click or copy this link into your browser)${fallback}`:''}
+${actionText?`\n➡ ${actionText}:\n${actionLink}\n(Click or copy this link into your browser)`:''}
 
 — IMC Travel Request System | ${S.reqId} | ${nowStr()}`;
 }
@@ -1132,10 +1124,7 @@ async function supervisorDecision(decision) {
         )
       );
       hideLoading();
-      document.getElementById('approverDoneTitle').textContent = '✅ Approved — Security Notified';
-      document.getElementById('approverDoneMsg').innerHTML = `<span class="alert-icon">✅</span><div>You have <strong>approved</strong> the travel request for <strong>${S.emp.name}</strong>. Security Department has been notified by email.<br><span style="font-size:12px;color:var(--muted);">Request ID: ${S.reqId}</span></div>`;
-      document.getElementById('approverDoneSummary').innerHTML = summaryHTML();
-      setWF(2); showScreen('screenApproverDone');
+      showApproverDone('Travel Request is Approved', `You have approved the travel request for ${S.emp.name}. Security Department has been notified.`);
       toast('✅ Approved! Security has been notified.','success');
     } catch(e) { hideLoading(); toast('❌ Email failed','danger'); console.error(e); }
   } else {
@@ -1168,10 +1157,7 @@ async function securityDecision(decision) {
         )
       );
       hideLoading();
-      document.getElementById('approverDoneTitle').textContent = '✅ Security Cleared — Finance Notified';
-      document.getElementById('approverDoneMsg').innerHTML = `<span class="alert-icon">✅</span><div>You have provided <strong>Security Clearance</strong> for the travel request of <strong>${S.emp.name}</strong>. Finance Department has been notified by email.<br><span style="font-size:12px;color:var(--muted);">Request ID: ${S.reqId}</span></div>`;
-      document.getElementById('approverDoneSummary').innerHTML = summaryHTML();
-      setWF(3); showScreen('screenApproverDone');
+      showApproverDone('Travel Request is Approved', `You have provided Security Clearance for the travel request of ${S.emp.name}. Finance Department has been notified.`);
       toast('✅ Cleared! Finance has been notified.','success');
     } catch(e) { hideLoading(); toast('❌ Email failed','danger'); console.error(e); }
   } else {
@@ -1206,10 +1192,7 @@ async function financeDecision(decision) {
         )
       );
       hideLoading();
-      document.getElementById('approverDoneTitle').textContent = '✅ Budget Approved — Logistics Notified';
-      document.getElementById('approverDoneMsg').innerHTML = `<span class="alert-icon">✅</span><div>You have <strong>approved the budget</strong> for the travel request of <strong>${S.emp.name}</strong>. Logistics Department has been notified by email.<br><span style="font-size:12px;color:var(--muted);">Request ID: ${S.reqId} | Budget: PKR ${S.approvals.finance.budget||'—'}</span></div>`;
-      document.getElementById('approverDoneSummary').innerHTML = summaryHTML();
-      setWF(4); showScreen('screenApproverDone');
+      showApproverDone('Travel Request is Approved', `You have approved the budget for the travel request of ${S.emp.name}. Logistics Department has been notified.`);
       toast('✅ Finance approved! Logistics has been notified.','success');
     } catch(e) { hideLoading(); toast('❌ Email failed','danger'); console.error(e); }
   } else {
@@ -1247,18 +1230,11 @@ async function logisticsDecision() {
     );
     hideLoading();
 
-    // Update header
-    document.getElementById('headerStatus').textContent = 'Approved';
-    document.getElementById('headerStatus').className   = 'status-pill status-approved';
-
-    // Show approver-done screen for logistics (it also closes the form)
-    document.getElementById('approverDoneTitle').textContent = '🎉 Fully Finalized — Employee Notified';
-    document.getElementById('approverDoneMsg').innerHTML = `<span class="alert-icon">🎉</span><div>Travel request for <strong>${S.emp.name}</strong> is <strong>fully approved & finalized</strong>. A notification email has been sent to the employee with instructions to download their PDF authorization.<br><span style="font-size:12px;color:var(--muted);">Request ID: ${S.reqId}</span></div>`;
-    document.getElementById('approverDoneSummary').innerHTML = summaryHTML() + `<div class="btn-bar" style="margin-top:16px;"><button class="btn btn-accent" onclick="generatePDFApprover()">📄 Download Official PDF</button></div>`;
-    setWF(5); showScreen('screenApproverDone');
+    setWF(5);
+    showApproverDone('Travel Request is Approved', `The travel request for ${S.emp.name} is fully finalized. The employee has been notified by email.`);
     toast('🎉 Fully approved! Employee has been emailed.','success');
 
-    // Also prepare the full complete screen data in background (for PDF)
+    // Prepare full screen data in background for PDF
     document.getElementById('finalSummary').innerHTML   = summaryHTML();
     document.getElementById('finalStamps').innerHTML    = allStampsHTML();
     document.getElementById('approvalTimeline').innerHTML = buildTimeline();
@@ -1308,8 +1284,7 @@ async function sendRejectionEmailApprover(dept, byName, reason) {
     hideLoading();
     document.getElementById('headerStatus').textContent = 'Rejected';
     document.getElementById('headerStatus').className   = 'status-pill status-rejected';
-    document.getElementById('approverRejSummary').innerHTML = summaryHTML();
-    showScreen('screenApproverRejDone');
+    showApproverRejDone();
     toast('Request rejected — employee notified.','danger');
   } catch(e) { hideLoading(); toast('❌ Email failed','danger'); console.error(e); }
 }
@@ -1336,24 +1311,29 @@ function buildTimeline() {
   }).join('');
 }
 
-// ===== PDF GENERATION (FIXED) =====
+// ===== PDF GENERATION (FIXED — full A4) =====
 function generatePDF() {
   buildPrintDoc();
-  // Temporarily make printForm visible so html2pdf can render it
   const pf = document.getElementById('printForm');
+  // Position off-screen but at exact A4 width (210mm at 96dpi ≈ 794px)
   pf.style.display = 'block';
   pf.style.position = 'fixed';
   pf.style.left = '-9999px';
   pf.style.top = '0';
-  pf.style.width = '800px';
+  pf.style.width = '794px';
   pf.style.zIndex = '-1';
+  pf.style.background = 'white';
+
+  const inner = document.getElementById('printDocInner');
+  inner.style.width = '794px';
 
   html2pdf().set({
-    margin:10, filename:`Travel-Request-${S.reqId}.pdf`,
-    image:{type:'jpeg',quality:0.98},
-    html2canvas:{scale:2,useCORS:true,logging:false},
-    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
-  }).from(document.getElementById('printDocInner')).save()
+    margin: [8, 8, 8, 8],
+    filename: `Travel-Request-${S.reqId}.pdf`,
+    image: { type:'jpeg', quality:0.98 },
+    html2canvas: { scale:2, useCORS:true, logging:false, width:794, windowWidth:794 },
+    jsPDF: { unit:'mm', format:'a4', orientation:'portrait' }
+  }).from(inner).save()
     .then(() => {
       pf.style.display = 'none';
       pf.style.position = '';
@@ -1361,6 +1341,8 @@ function generatePDF() {
       pf.style.top = '';
       pf.style.width = '';
       pf.style.zIndex = '';
+      pf.style.background = '';
+      inner.style.width = '';
       toast('✅ PDF downloaded!','success');
     });
   toast('📄 Generating PDF…');
@@ -1490,18 +1472,22 @@ function downloadRecordPDF(reqId) {
   Object.assign(S, rec.state);
   buildPrintDoc();
   const pf = document.getElementById('printForm');
+  const inner = document.getElementById('printDocInner');
   pf.style.display = 'block';
   pf.style.position = 'fixed';
   pf.style.left = '-9999px';
   pf.style.top = '0';
-  pf.style.width = '800px';
+  pf.style.width = '794px';
   pf.style.zIndex = '-1';
+  pf.style.background = 'white';
+  inner.style.width = '794px';
   html2pdf().set({
-    margin:10, filename:`Travel-Request-${reqId}.pdf`,
+    margin: [8,8,8,8],
+    filename: `Travel-Request-${reqId}.pdf`,
     image:{type:'jpeg',quality:0.98},
-    html2canvas:{scale:2,useCORS:true,logging:false},
+    html2canvas:{scale:2,useCORS:true,logging:false,width:794,windowWidth:794},
     jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
-  }).from(document.getElementById('printDocInner')).save()
+  }).from(inner).save()
     .then(() => {
       pf.style.display = 'none';
       pf.style.position = '';
@@ -1509,6 +1495,8 @@ function downloadRecordPDF(reqId) {
       pf.style.top = '';
       pf.style.width = '';
       pf.style.zIndex = '';
+      pf.style.background = '';
+      inner.style.width = '';
       // Restore original state
       Object.assign(S, origS);
       toast('✅ PDF downloaded!','success');
@@ -1555,6 +1543,7 @@ function buildPrintDoc() {
       <div class="print-field"><div class="print-label">Phone</div><div class="print-value">${e.phone||'—'}</div></div>
       <div class="print-field"><div class="print-label">Supervisor</div><div class="print-value">${s.name||'—'}</div></div>
       <div class="print-field"><div class="print-label">Supervisor Email</div><div class="print-value">${s.email||'—'}</div></div>
+      <div class="print-field"><div class="print-label">Request ID</div><div class="print-value" style="font-family:monospace;">${S.reqId}</div></div>
     </div>
   </div>
 
@@ -1594,6 +1583,36 @@ function buildPrintDoc() {
   </div>`;
 }
 
+function autoCloseTab(countdownId, seconds=5) {
+  let remaining = seconds;
+  const el = document.getElementById(countdownId);
+  const tick = setInterval(() => {
+    remaining--;
+    if (el) el.textContent = remaining;
+    if (remaining <= 0) {
+      clearInterval(tick);
+      window.close();
+      // Fallback if window.close() is blocked
+      setTimeout(() => {
+        document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:Segoe UI,Arial,sans-serif;background:#f4f7fb;"><div style="text-align:center;padding:40px;background:white;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.1);"><div style="font-size:48px;margin-bottom:16px;">✅</div><div style="font-size:20px;font-weight:700;color:#1a6b3a;">Action Completed</div><div style="font-size:14px;color:#5a6a7e;margin-top:8px;">You may now close this tab manually.</div></div></div>`;
+      }, 500);
+    }
+  }, 1000);
+}
+
+function showApproverDone(titleText, msgText) {
+  document.getElementById('approverDoneTitle').textContent  = titleText;
+  document.getElementById('approverDoneTitle2').textContent = titleText;
+  document.getElementById('approverDoneMsg').textContent    = msgText;
+  showScreen('screenApproverDone');
+  autoCloseTab('closeCountdown', 5);
+}
+
+function showApproverRejDone() {
+  showScreen('screenApproverRejDone');
+  autoCloseTab('closeCountdownRej', 5);
+}
+
 function startNew() {
   if (confirm('Start a new request? Current data will be cleared.'))
     location.href = window.location.href.split('?')[0];
@@ -1601,4 +1620,3 @@ function startNew() {
 </script>
 </body>
 </html>
-
