@@ -272,6 +272,7 @@ textarea { resize:vertical; min-height:80px; }
         <span id="headerReqId">—</span>
       </div>
       <span class="status-pill status-draft" id="headerStatus">Draft</span>
+      <button class="btn btn-outline" style="color:white;border-color:rgba(255,255,255,0.4);font-size:12px;padding:6px 14px;" onclick="openRecords()">📁 Records</button>
     </div>
   </div>
 </div>
@@ -680,9 +681,73 @@ textarea { resize:vertical; min-height:80px; }
     </div>
   </div>
 
+  <!-- ===== SCREEN: APPROVER DONE ===== -->
+  <div class="screen" id="screenApproverDone">
+    <div class="panel">
+      <div class="panel-header success">
+        <div class="panel-icon">✅</div>
+        <div>
+          <div class="panel-title" id="approverDoneTitle">Action Recorded</div>
+          <div class="panel-subtitle">Your decision has been saved and the next department has been notified</div>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="alert alert-success" id="approverDoneMsg">
+          <span class="alert-icon">✅</span>
+          <div>Your approval has been recorded and the next step has been notified automatically.</div>
+        </div>
+        <div id="approverDoneSummary"></div>
+        <div class="divider"></div>
+        <div style="text-align:center;padding:20px 0;">
+          <div style="font-size:48px;margin-bottom:12px;">🔒</div>
+          <div style="font-size:16px;font-weight:600;color:var(--primary);margin-bottom:8px)">This form is now closed.</div>
+          <div style="font-size:14px;color:var(--muted);">You may safely close this browser tab.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN: APPROVER REJECTED DONE ===== -->
+  <div class="screen" id="screenApproverRejDone">
+    <div class="panel">
+      <div class="panel-header danger">
+        <div class="panel-icon">❌</div>
+        <div>
+          <div class="panel-title">Rejection Recorded</div>
+          <div class="panel-subtitle">The employee has been notified of the rejection</div>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="alert alert-danger">
+          <span class="alert-icon">❌</span>
+          <div>Your rejection has been recorded and the employee has been notified by email.</div>
+        </div>
+        <div id="approverRejSummary"></div>
+        <div class="divider"></div>
+        <div style="text-align:center;padding:20px 0;">
+          <div style="font-size:48px;margin-bottom:12px;">🔒</div>
+          <div style="font-size:16px;font-weight:600;color:var(--danger);margin-bottom:8px;">This form is now closed.</div>
+          <div style="font-size:14px;color:var(--muted);">You may safely close this browser tab.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div><!-- /main -->
 
-<!-- PRINT FORM (hidden, used for PDF) -->
+<!-- RECORDS MODAL -->
+<div id="recordsModal" style="display:none;position:fixed;inset:0;background:rgba(26,58,92,0.88);z-index:9998;overflow-y:auto;padding:40px 16px;">
+  <div style="max-width:900px;margin:0 auto;background:white;border-radius:12px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.4);">
+    <div class="panel-header" style="background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);padding:16px 20px;display:flex;align-items:center;gap:12px;">
+      <div class="panel-icon">📁</div>
+      <div style="flex:1;"><div class="panel-title">Travel Request Records</div><div class="panel-subtitle">All submitted travel requests stored in this browser</div></div>
+      <button onclick="closeRecords()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:14px;">✕ Close</button>
+    </div>
+    <div style="padding:20px;">
+      <div id="recordsContent"></div>
+    </div>
+  </div>
+</div>
 <div id="printForm"><div class="print-doc" id="printDocInner"></div></div>
 
 <!-- TOAST -->
@@ -1014,6 +1079,7 @@ async function submitEmployeeForm() {
     document.getElementById('submittedSummary').innerHTML = summaryHTML();
     document.getElementById('chainDisplay').innerHTML     = buildChainDisplay();
     setWF(1); showScreen('screen0s');
+    saveRecord('pending');
     toast('✅ Submitted! Supervisor has been emailed.','success');
   } catch(err) {
     hideLoading();
@@ -1066,12 +1132,14 @@ async function supervisorDecision(decision) {
         )
       );
       hideLoading();
-      document.getElementById('securitySummary').innerHTML = summaryHTML();
-      setWF(2); showScreen('screen2');
+      document.getElementById('approverDoneTitle').textContent = '✅ Approved — Security Notified';
+      document.getElementById('approverDoneMsg').innerHTML = `<span class="alert-icon">✅</span><div>You have <strong>approved</strong> the travel request for <strong>${S.emp.name}</strong>. Security Department has been notified by email.<br><span style="font-size:12px;color:var(--muted);">Request ID: ${S.reqId}</span></div>`;
+      document.getElementById('approverDoneSummary').innerHTML = summaryHTML();
+      setWF(2); showScreen('screenApproverDone');
       toast('✅ Approved! Security has been notified.','success');
     } catch(e) { hideLoading(); toast('❌ Email failed','danger'); console.error(e); }
   } else {
-    await sendRejectionEmail('Supervisor', S.approvals.supervisor.name, S.approvals.supervisor.comment);
+    await sendRejectionEmailApprover('Supervisor', S.approvals.supervisor.name, S.approvals.supervisor.comment);
   }
 }
 
@@ -1100,12 +1168,14 @@ async function securityDecision(decision) {
         )
       );
       hideLoading();
-      document.getElementById('financeSummary').innerHTML = summaryHTML();
-      setWF(3); showScreen('screen3');
+      document.getElementById('approverDoneTitle').textContent = '✅ Security Cleared — Finance Notified';
+      document.getElementById('approverDoneMsg').innerHTML = `<span class="alert-icon">✅</span><div>You have provided <strong>Security Clearance</strong> for the travel request of <strong>${S.emp.name}</strong>. Finance Department has been notified by email.<br><span style="font-size:12px;color:var(--muted);">Request ID: ${S.reqId}</span></div>`;
+      document.getElementById('approverDoneSummary').innerHTML = summaryHTML();
+      setWF(3); showScreen('screenApproverDone');
       toast('✅ Cleared! Finance has been notified.','success');
     } catch(e) { hideLoading(); toast('❌ Email failed','danger'); console.error(e); }
   } else {
-    await sendRejectionEmail('Security Department', S.approvals.security.name, S.approvals.security.comment);
+    await sendRejectionEmailApprover('Security Department', S.approvals.security.name, S.approvals.security.comment);
   }
 }
 
@@ -1136,12 +1206,14 @@ async function financeDecision(decision) {
         )
       );
       hideLoading();
-      document.getElementById('logisticsSummary').innerHTML = summaryHTML();
-      setWF(4); showScreen('screen4');
+      document.getElementById('approverDoneTitle').textContent = '✅ Budget Approved — Logistics Notified';
+      document.getElementById('approverDoneMsg').innerHTML = `<span class="alert-icon">✅</span><div>You have <strong>approved the budget</strong> for the travel request of <strong>${S.emp.name}</strong>. Logistics Department has been notified by email.<br><span style="font-size:12px;color:var(--muted);">Request ID: ${S.reqId} | Budget: PKR ${S.approvals.finance.budget||'—'}</span></div>`;
+      document.getElementById('approverDoneSummary').innerHTML = summaryHTML();
+      setWF(4); showScreen('screenApproverDone');
       toast('✅ Finance approved! Logistics has been notified.','success');
     } catch(e) { hideLoading(); toast('❌ Email failed','danger'); console.error(e); }
   } else {
-    await sendRejectionEmail('Finance Department', S.approvals.finance.name, S.approvals.finance.comment);
+    await sendRejectionEmailApprover('Finance Department', S.approvals.finance.name, S.approvals.finance.comment);
   }
 }
 
@@ -1158,29 +1230,46 @@ async function logisticsDecision() {
     hotel:document.getElementById('logHotel').value.trim()
   };
   saveState();
+  saveRecord('approved');
 
-  showLoading('Finalizing & emailing employee...', `Sending approved document to ${S.emp.email}`);
+  showLoading('Generating PDF & emailing employee...', `Sending approved document to ${S.emp.email}`);
   try {
+    // Build the print doc first so PDF can be generated
+    buildPrintDoc();
+    // Generate PDF as blob for email reference, but also prepare screen
     await sendEmail(S.emp.email, S.emp.name,
-      `[✅ FULLY APPROVED] Your Travel Request ${S.reqId} — ${S.emp.name}`,
+      `[✅ FULLY APPROVED] Your Travel Request ${S.reqId} — Official Travel Authorization`,
       buildEmailBody(
-        `Dear ${S.emp.name},\n\nCongratulations! Your travel request has been FULLY APPROVED by all departments.`,
+        `Dear ${S.emp.name},\n\nCongratulations! Your travel request has been FULLY APPROVED by all departments.\n\nPlease log into the Travel Request Portal to download your official PDF authorization document.`,
         `✅ SUPERVISOR : Approved by ${S.approvals.supervisor.name} on ${S.approvals.supervisor.date}\n✅ SECURITY   : Cleared by ${S.approvals.security.name} on ${S.approvals.security.date}\n✅ FINANCE    : Approved by ${S.approvals.finance.name} on ${S.approvals.finance.date} | Budget: PKR ${S.approvals.finance.budget||'—'} | Code: ${S.approvals.finance.budgetCode||'—'}\n✅ LOGISTICS  : Confirmed by ${S.approvals.logistics.name} on ${S.approvals.logistics.date}\n\nBOOKING:\nTicket/Vehicle : ${S.approvals.logistics.ticket||'TBD'}\nHotel          : ${S.approvals.logistics.hotel||'N/A'}\n${S.approvals.logistics.comment?`Notes          : ${S.approvals.logistics.comment}`:''}`,
         '', ''
       )
     );
     hideLoading();
+
+    // Update header
     document.getElementById('headerStatus').textContent = 'Approved';
     document.getElementById('headerStatus').className   = 'status-pill status-approved';
+
+    // Show approver-done screen for logistics (it also closes the form)
+    document.getElementById('approverDoneTitle').textContent = '🎉 Fully Finalized — Employee Notified';
+    document.getElementById('approverDoneMsg').innerHTML = `<span class="alert-icon">🎉</span><div>Travel request for <strong>${S.emp.name}</strong> is <strong>fully approved & finalized</strong>. A notification email has been sent to the employee with instructions to download their PDF authorization.<br><span style="font-size:12px;color:var(--muted);">Request ID: ${S.reqId}</span></div>`;
+    document.getElementById('approverDoneSummary').innerHTML = summaryHTML() + `<div class="btn-bar" style="margin-top:16px;"><button class="btn btn-accent" onclick="generatePDFApprover()">📄 Download Official PDF</button></div>`;
+    setWF(5); showScreen('screenApproverDone');
+    toast('🎉 Fully approved! Employee has been emailed.','success');
+
+    // Also prepare the full complete screen data in background (for PDF)
     document.getElementById('finalSummary').innerHTML   = summaryHTML();
     document.getElementById('finalStamps').innerHTML    = allStampsHTML();
     document.getElementById('approvalTimeline').innerHTML = buildTimeline();
-    setWF(5); showScreen('screen5');
-    toast('🎉 Fully approved! Employee has been emailed.','success');
   } catch(e) { hideLoading(); toast('❌ Email failed','danger'); console.error(e); }
 }
 
-// ===== REJECTION EMAIL =====
+function generatePDFApprover() {
+  generatePDF();
+}
+
+// ===== REJECTION EMAIL (from employee-facing complete/rejected screen) =====
 async function sendRejectionEmail(dept, byName, reason) {
   showLoading('Sending rejection notice...', `Emailing ${S.emp.email}`);
   try {
@@ -1199,6 +1288,28 @@ async function sendRejectionEmail(dept, byName, reason) {
     document.getElementById('rejectedSummary').innerHTML = summaryHTML();
     document.getElementById('rejectedStamps').innerHTML  = allStampsHTML();
     showScreen('screenRejected');
+    toast('Request rejected — employee notified.','danger');
+  } catch(e) { hideLoading(); toast('❌ Email failed','danger'); console.error(e); }
+}
+
+// ===== REJECTION EMAIL (from approver screens — closes approver form) =====
+async function sendRejectionEmailApprover(dept, byName, reason) {
+  showLoading('Sending rejection notice...', `Emailing ${S.emp.email}`);
+  try {
+    await sendEmail(S.emp.email, S.emp.name,
+      `[REJECTED] Your Travel Request ${S.reqId}`,
+      buildEmailBody(
+        `Dear ${S.emp.name},\n\nYour travel request has been REJECTED by the ${dept}.`,
+        `Rejected By : ${dept} (${byName||'—'})\nDate         : ${nowStr()}\n${reason?`Reason       : ${reason}`:''}`,
+        '', ''
+      )
+    );
+    saveRecord('rejected');
+    hideLoading();
+    document.getElementById('headerStatus').textContent = 'Rejected';
+    document.getElementById('headerStatus').className   = 'status-pill status-rejected';
+    document.getElementById('approverRejSummary').innerHTML = summaryHTML();
+    showScreen('screenApproverRejDone');
     toast('Request rejected — employee notified.','danger');
   } catch(e) { hideLoading(); toast('❌ Email failed','danger'); console.error(e); }
 }
@@ -1225,16 +1336,183 @@ function buildTimeline() {
   }).join('');
 }
 
-// ===== PDF GENERATION =====
+// ===== PDF GENERATION (FIXED) =====
 function generatePDF() {
   buildPrintDoc();
+  // Temporarily make printForm visible so html2pdf can render it
+  const pf = document.getElementById('printForm');
+  pf.style.display = 'block';
+  pf.style.position = 'fixed';
+  pf.style.left = '-9999px';
+  pf.style.top = '0';
+  pf.style.width = '800px';
+  pf.style.zIndex = '-1';
+
   html2pdf().set({
     margin:10, filename:`Travel-Request-${S.reqId}.pdf`,
     image:{type:'jpeg',quality:0.98},
-    html2canvas:{scale:2,useCORS:true},
+    html2canvas:{scale:2,useCORS:true,logging:false},
     jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
   }).from(document.getElementById('printDocInner')).save()
-    .then(() => toast('✅ PDF downloaded!','success'));
+    .then(() => {
+      pf.style.display = 'none';
+      pf.style.position = '';
+      pf.style.left = '';
+      pf.style.top = '';
+      pf.style.width = '';
+      pf.style.zIndex = '';
+      toast('✅ PDF downloaded!','success');
+    });
+  toast('📄 Generating PDF…');
+}
+
+// ===== RECORDS =====
+function saveRecord(finalStatus) {
+  try {
+    const record = {
+      reqId: S.reqId,
+      empName: S.emp.name,
+      empDept: S.emp.dept,
+      destination: S.travel.destination,
+      travelDate: S.travel.date,
+      returnDate: S.travel.returnDate,
+      purpose: S.travel.purpose,
+      status: finalStatus,
+      savedAt: nowStr(),
+      state: {reqId:S.reqId,emp:S.emp,sup:S.sup,travel:S.travel,approvals:S.approvals}
+    };
+    // Save to records list
+    let records = [];
+    try { records = JSON.parse(localStorage.getItem('trf_records')||'[]'); } catch(e) {}
+    // Remove duplicate if exists
+    records = records.filter(r => r.reqId !== S.reqId);
+    records.unshift(record);
+    // Keep max 200
+    if (records.length > 200) records = records.slice(0,200);
+    localStorage.setItem('trf_records', JSON.stringify(records));
+  } catch(e) { console.warn('Record save failed',e); }
+}
+
+function openRecords() {
+  let records = [];
+  try { records = JSON.parse(localStorage.getItem('trf_records')||'[]'); } catch(e) {}
+  const container = document.getElementById('recordsContent');
+  if (!records.length) {
+    container.innerHTML = `<div class="alert alert-info"><span class="alert-icon">ℹ️</span><div>No travel request records found in this browser. Records are saved when requests are fully approved or rejected.</div></div>`;
+  } else {
+    container.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+        <div style="font-size:13px;color:var(--muted);">${records.length} record(s) found — stored in this browser</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <input type="text" id="recordSearch" placeholder="Search by name, ID, destination..." style="padding:7px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;width:240px;" oninput="filterRecords()">
+          <button class="btn btn-danger btn-sm" onclick="clearAllRecords()">🗑 Clear All</button>
+        </div>
+      </div>
+      <div id="recordsList"></div>`;
+    renderRecordsList(records);
+  }
+  document.getElementById('recordsModal').style.display = 'block';
+}
+
+function renderRecordsList(records) {
+  const list = document.getElementById('recordsList');
+  if (!list) return;
+  if (!records.length) {
+    list.innerHTML = `<div class="alert alert-warning"><span class="alert-icon">⚠️</span><div>No records match your search.</div></div>`;
+    return;
+  }
+  list.innerHTML = records.map((r,i) => {
+    const statusClass = r.status==='approved' ? 'status-approved' : r.status==='rejected' ? 'status-rejected' : 'status-pending';
+    const statusIcon  = r.status==='approved' ? '✅' : r.status==='rejected' ? '❌' : '⏳';
+    return `<div style="border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:10px;background:${r.status==='approved'?'#f4fcf7':r.status==='rejected'?'#fef8f8':'#f8faff'};">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <span style="font-family:monospace;font-size:13px;font-weight:700;color:var(--primary);">${r.reqId}</span>
+            <span class="status-pill ${statusClass}">${statusIcon} ${r.status.toUpperCase()}</span>
+          </div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">${r.empName||'—'} <span style="font-size:12px;font-weight:400;color:var(--muted);">— ${r.empDept||'—'}</span></div>
+          <div style="font-size:13px;color:var(--muted);">✈ ${r.destination||'—'} &nbsp;|&nbsp; 📅 ${formatDate(r.travelDate)} → ${formatDate(r.returnDate)}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px;">Purpose: ${r.purpose||'—'}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+          <div style="font-size:11px;color:var(--muted);">Saved: ${r.savedAt}</div>
+          <button class="btn btn-accent btn-sm" onclick="downloadRecordPDF('${r.reqId}')">📄 PDF</button>
+          <button class="btn btn-outline btn-sm" onclick="deleteRecord('${r.reqId}')">🗑 Delete</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterRecords() {
+  const q = (document.getElementById('recordSearch')?.value||'').toLowerCase();
+  let records = [];
+  try { records = JSON.parse(localStorage.getItem('trf_records')||'[]'); } catch(e) {}
+  if (q) records = records.filter(r =>
+    (r.reqId||'').toLowerCase().includes(q) ||
+    (r.empName||'').toLowerCase().includes(q) ||
+    (r.destination||'').toLowerCase().includes(q) ||
+    (r.empDept||'').toLowerCase().includes(q) ||
+    (r.purpose||'').toLowerCase().includes(q)
+  );
+  renderRecordsList(records);
+}
+
+function closeRecords() {
+  document.getElementById('recordsModal').style.display = 'none';
+}
+
+function deleteRecord(reqId) {
+  if (!confirm('Delete this record?')) return;
+  let records = [];
+  try { records = JSON.parse(localStorage.getItem('trf_records')||'[]'); } catch(e) {}
+  records = records.filter(r => r.reqId !== reqId);
+  localStorage.setItem('trf_records', JSON.stringify(records));
+  openRecords();
+  toast('Record deleted.','');
+}
+
+function clearAllRecords() {
+  if (!confirm('Delete ALL travel request records? This cannot be undone.')) return;
+  localStorage.setItem('trf_records', '[]');
+  openRecords();
+  toast('All records cleared.','danger');
+}
+
+function downloadRecordPDF(reqId) {
+  let records = [];
+  try { records = JSON.parse(localStorage.getItem('trf_records')||'[]'); } catch(e) {}
+  const rec = records.find(r => r.reqId === reqId);
+  if (!rec || !rec.state) { toast('Record data not available','danger'); return; }
+  // Temporarily restore state for PDF, then restore original
+  const origS = JSON.parse(JSON.stringify(S));
+  Object.assign(S, rec.state);
+  buildPrintDoc();
+  const pf = document.getElementById('printForm');
+  pf.style.display = 'block';
+  pf.style.position = 'fixed';
+  pf.style.left = '-9999px';
+  pf.style.top = '0';
+  pf.style.width = '800px';
+  pf.style.zIndex = '-1';
+  html2pdf().set({
+    margin:10, filename:`Travel-Request-${reqId}.pdf`,
+    image:{type:'jpeg',quality:0.98},
+    html2canvas:{scale:2,useCORS:true,logging:false},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
+  }).from(document.getElementById('printDocInner')).save()
+    .then(() => {
+      pf.style.display = 'none';
+      pf.style.position = '';
+      pf.style.left = '';
+      pf.style.top = '';
+      pf.style.width = '';
+      pf.style.zIndex = '';
+      // Restore original state
+      Object.assign(S, origS);
+      toast('✅ PDF downloaded!','success');
+    });
   toast('📄 Generating PDF…');
 }
 
@@ -1323,3 +1601,4 @@ function startNew() {
 </script>
 </body>
 </html>
+
