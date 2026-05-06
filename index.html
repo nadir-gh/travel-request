@@ -336,12 +336,11 @@ textarea { resize:vertical; min-height:80px; }
 <div class="toast" id="toast"></div>
 
 <script>
-// ===== CONFIG =====
-const EMAILJS_PUBLIC_KEY  = '0EeAOuTRgEkvPZuYn';
-const EMAILJS_SERVICE_ID  = 'service_i1t9kqb';
-const EMAILJS_TEMPLATE_ID = 'template_y7ihtnf';
+// ===== CONFIG — UPDATE THESE WITH YOUR OWN EMAILJS CREDENTIALS =====
+const EMAILJS_PUBLIC_KEY  = '0EeAOuTRgEkvPZuYn';  // ← Replace with your EmailJS Public Key
+const EMAILJS_SERVICE_ID  = 'service_i1t9kqb';      // ← Replace with your EmailJS Service ID
+const EMAILJS_TEMPLATE_ID = 'template_y7ihtnf';     // ← Replace with your EmailJS Template ID
 const JSONBIN_URL = 'https://api.jsonbin.io/v3/b';
-// USING PUBLIC BIN - No Master Key needed for read/write if created via API
 
 const DEPT = {
   security:  'shkayani@internationalmedicalcorps.org',
@@ -352,30 +351,37 @@ const DEPT = {
 let S = {
   reqId:'', emp:{}, sup:{}, travel:{}, binId:'',
   approvals:{
-    supervisor:{ status:'pending', name:'', date:'' },
-    security:  { status:'pending', name:'', date:'' },
-    finance:   { status:'pending', name:'', date:'' },
-    logistics: { status:'pending', name:'', date:'' }
+    supervisor:{ status:'pending', name:'', date:'', comment:'' },
+    security:  { status:'pending', name:'', date:'', comment:'' },
+    finance:   { status:'pending', name:'', date:'', comment:'' },
+    logistics: { status:'pending', name:'', date:'', comment:'' }
   },
   radioValues:{}
 };
 
-emailjs.init(EMAILJS_PUBLIC_KEY);
+// ===== EMAILJS INIT (with error guard) =====
+try {
+  emailjs.init(EMAILJS_PUBLIC_KEY);
+} catch(e) {
+  console.warn('EmailJS init failed:', e);
+}
 
+// ===== LOAD =====
 window.addEventListener('load', async () => {
   const params = new URLSearchParams(window.location.search);
-  const bin = params.get('bin');
+  const bin   = params.get('bin');
   const stage = params.get('stage');
 
   if (bin) {
     showLoading('Syncing data...', 'Fetching request from cloud');
     try {
-      const res = await fetch(`${JSONBIN_URL}/${bin}/latest`);
+      const res  = await fetch(`${JSONBIN_URL}/${bin}/latest`);
+      if (!res.ok) throw new Error('Fetch failed');
       const data = await res.json();
       S = data.record;
       S.binId = bin;
       restoreUI();
-      if(stage) renderStage(stage);
+      if (stage) renderStage(stage);
       hideLoading();
     } catch(e) {
       hideLoading();
@@ -385,19 +391,20 @@ window.addEventListener('load', async () => {
     S.reqId = 'TRF-' + Date.now().toString().slice(-6);
     document.getElementById('headerReqId').textContent = S.reqId;
     document.getElementById('formReqId').textContent   = S.reqId;
+    showScreen('screen0');
   }
 });
 
 // ===== CLOUD SYNC =====
 async function syncToCloud() {
   const method = S.binId ? 'PUT' : 'POST';
-  const url = S.binId ? `${JSONBIN_URL}/${S.binId}` : JSONBIN_URL;
-  
+  const url    = S.binId ? `${JSONBIN_URL}/${S.binId}` : JSONBIN_URL;
   const res = await fetch(url, {
-    method: method,
+    method,
     headers: { 'Content-Type': 'application/json', 'X-Bin-Private': 'false' },
     body: JSON.stringify(S)
   });
+  if (!res.ok) throw new Error('Cloud sync failed: ' + res.status);
   const data = await res.json();
   if (!S.binId) S.binId = data.metadata.id;
   return S.binId;
@@ -405,68 +412,280 @@ async function syncToCloud() {
 
 async function getLink(stage) {
   const binId = await syncToCloud();
-  const base = window.location.href.split('?')[0];
+  const base  = window.location.href.split('?')[0];
   return `${base}?stage=${stage}&bin=${binId}`;
 }
 
-// ===== CORE LOGIC =====
+// ===== SEND EMAIL (with detailed error logging) =====
+async function sendEmail(toEmail, subject, message) {
+  try {
+    const result = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email: toEmail,
+      subject:  subject,
+      message:  message
+    });
+    console.log('Email sent:', result);
+    return true;
+  } catch(err) {
+    console.error('EmailJS error details:', JSON.stringify(err));
+    // Show a more descriptive error
+    const detail = err && err.text ? err.text : (err && err.status ? `Status ${err.status}` : 'Unknown error');
+    toast(`Email failed: ${detail}`, 'danger');
+    return false;
+  }
+}
+
+// ===== VALIDATION HELPER =====
+function validateEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+}
+
+// ===== SUBMIT EMPLOYEE FORM =====
 async function submitEmployeeForm() {
-  // Simple validation check
-  if(!document.getElementById('empName').value) return toast('Name required','danger');
+  const empName   = document.getElementById('empName').value.trim();
+  const empEmail  = document.getElementById('empEmail').value.trim();
+  const empDept   = document.getElementById('empDept').value;
+  const supName   = document.getElementById('supName').value.trim();
+  const supEmail  = document.getElementById('supEmail').value.trim();
+  const destination = document.getElementById('destination').value.trim();
+  const travelDate  = document.getElementById('travelDate').value;
+  const purpose     = document.getElementById('purpose').value.trim();
 
-  S.emp = { name: document.getElementById('empName').value, email: document.getElementById('empEmail').value, dept: document.getElementById('empDept').value };
-  S.sup = { name: document.getElementById('supName').value, email: document.getElementById('supEmail').value };
-  S.travel = { destination: document.getElementById('destination').value, date: document.getElementById('travelDate').value, mode: S.radioValues['travel-mode'] };
+  // Validation
+  if (!empName)        return toast('Employee name is required', 'danger');
+  if (!empEmail)       return toast('Your email address is required', 'danger');
+  if (!validateEmail(empEmail)) return toast('Your email address is invalid', 'danger');
+  if (!empDept)        return toast('Please select your department', 'danger');
+  if (!supName)        return toast('Supervisor name is required', 'danger');
+  if (!supEmail)       return toast('Supervisor email is required', 'danger');
+  if (!validateEmail(supEmail)) return toast('Supervisor email address is invalid', 'danger');
+  if (!destination)    return toast('Destination is required', 'danger');
+  if (!travelDate)     return toast('Travel date is required', 'danger');
+  if (!purpose)        return toast('Purpose of travel is required', 'danger');
+  if (!S.radioValues['travel-mode']) return toast('Please select mode of travel', 'danger');
 
-  showLoading('Saving request...', 'Generating cloud link');
+  // Save to state
+  S.emp    = { name: empName, email: empEmail, dept: empDept,
+               designation: document.getElementById('empDesignation').value.trim(),
+               empId: document.getElementById('empId').value.trim(),
+               phone: document.getElementById('empPhone').value.trim() };
+  S.sup    = { name: supName, email: supEmail };
+  S.travel = { destination, date: travelDate, returnDate: document.getElementById('returnDate').value,
+               purpose, notes: document.getElementById('notes').value.trim(),
+               mode: S.radioValues['travel-mode'], hotel: S.radioValues['hotel'] };
+
+  document.getElementById('btnSubmit').disabled = true;
+  showLoading('Saving request...', 'Generating cloud link — please wait');
+
   try {
     const link = await getLink('supervisor');
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_email: S.sup.email,
-      subject: `Travel Approval Required: ${S.reqId}`,
-      message: `Dear ${S.sup.name}, please review travel for ${S.emp.name} here: ${link}`
-    });
+    const emailOk = await sendEmail(
+      supEmail,
+      `Travel Approval Required: ${S.reqId}`,
+      `Dear ${supName},\n\nPlease review the travel request submitted by ${empName} (${empDept}).\n\nDestination: ${destination}\nDate: ${travelDate}\nPurpose: ${purpose}\n\nClick here to review and approve:\n${link}\n\nThank you.`
+    );
+
     hideLoading();
-    showScreen('screen0s');
+    document.getElementById('btnSubmit').disabled = false;
+
+    if (emailOk) {
+      document.getElementById('submittedId').textContent = S.reqId;
+      showScreen('screen0s');
+      toast('Request submitted! Supervisor notified.', 'success');
+    }
+    // If email failed, sendEmail() already showed a toast — stay on form
   } catch(e) {
     hideLoading();
-    toast('Email Error','danger');
+    document.getElementById('btnSubmit').disabled = false;
+    console.error('Submit error:', e);
+    toast('Submission failed: ' + (e.message || 'Unknown error'), 'danger');
   }
 }
 
+// ===== SUPERVISOR DECISION =====
 async function supervisorDecision(decision) {
-  S.approvals.supervisor = { status: decision, name: document.getElementById('supSignName').value, date: new Date().toLocaleString() };
-  if(decision === 'approved') {
-    const link = await getLink('security');
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, { to_email: DEPT.security, message: `Security clearance needed: ${link}` });
+  const name    = document.getElementById('supSignName').value.trim();
+  const comment = document.getElementById('supComment').value.trim();
+  if (!name) return toast('Please enter your full name to proceed', 'danger');
+
+  S.approvals.supervisor = { status: decision, name, date: new Date().toLocaleString(), comment };
+  showLoading('Processing decision...', 'Please wait');
+  try {
+    if (decision === 'approved') {
+      const link = await getLink('security');
+      await sendEmail(DEPT.security,
+        `Security Clearance Required: ${S.reqId}`,
+        `Dear Security Team,\n\nTravel request ${S.reqId} for ${S.emp.name} to ${S.travel.destination} has been approved by the supervisor.\n\nPlease review and provide security clearance:\n${link}`
+      );
+    } else {
+      await syncToCloud();
+      await sendEmail(S.emp.email,
+        `Travel Request ${S.reqId} — Rejected by Supervisor`,
+        `Dear ${S.emp.name},\n\nYour travel request ${S.reqId} was rejected by your supervisor.\n\nComments: ${comment || 'No comments provided.'}`
+      );
+    }
+    hideLoading();
     showScreen('screenApproverDone');
+  } catch(e) {
+    hideLoading();
+    toast('Error processing decision: ' + (e.message || 'Unknown'), 'danger');
   }
 }
 
-// ... Additional helper functions (restoreUI, renderStage, showScreen, etc)
+// ===== SECURITY DECISION =====
+async function securityDecision(decision) {
+  const name    = document.getElementById('secSignName').value.trim();
+  const comment = document.getElementById('secComment').value.trim();
+  if (!name) return toast('Please enter security officer name', 'danger');
+
+  S.approvals.security = { status: decision, name, date: new Date().toLocaleString(), comment };
+  showLoading('Processing...', 'Please wait');
+  try {
+    if (decision === 'approved') {
+      const link = await getLink('finance');
+      await sendEmail(DEPT.finance,
+        `Finance Approval Required: ${S.reqId}`,
+        `Dear Finance Team,\n\nTravel request ${S.reqId} for ${S.emp.name} has cleared security. Please approve budget:\n${link}`
+      );
+    } else {
+      await syncToCloud();
+      await sendEmail(S.emp.email,
+        `Travel Request ${S.reqId} — Rejected by Security`,
+        `Dear ${S.emp.name},\n\nYour travel request was rejected at the security stage.\n\nComments: ${comment || 'No comments provided.'}`
+      );
+    }
+    hideLoading();
+    showScreen('screenApproverDone');
+  } catch(e) {
+    hideLoading();
+    toast('Error: ' + (e.message || 'Unknown'), 'danger');
+  }
+}
+
+// ===== FINANCE DECISION =====
+async function financeDecision(decision) {
+  const name   = document.getElementById('finSignName').value.trim();
+  const budget = document.getElementById('finBudget').value.trim();
+  if (!name) return toast('Please enter finance officer name', 'danger');
+
+  S.approvals.finance = { status: decision, name, date: new Date().toLocaleString(), budget };
+  showLoading('Processing...', 'Please wait');
+  try {
+    if (decision === 'approved') {
+      const link = await getLink('logistics');
+      await sendEmail(DEPT.logistics,
+        `Logistics Arrangement Required: ${S.reqId}`,
+        `Dear Logistics Team,\n\nTravel request ${S.reqId} for ${S.emp.name} to ${S.travel.destination} on ${S.travel.date} is fully approved. Please arrange travel:\n${link}`
+      );
+    } else {
+      await syncToCloud();
+      await sendEmail(S.emp.email,
+        `Travel Request ${S.reqId} — Rejected by Finance`,
+        `Dear ${S.emp.name},\n\nYour travel request was rejected at the finance stage.`
+      );
+    }
+    hideLoading();
+    showScreen('screenApproverDone');
+  } catch(e) {
+    hideLoading();
+    toast('Error: ' + (e.message || 'Unknown'), 'danger');
+  }
+}
+
+// ===== LOGISTICS DECISION =====
+async function logisticsDecision() {
+  const ticket = document.getElementById('logTicket').value.trim();
+  S.approvals.logistics = { status: 'approved', name: 'Logistics Team', date: new Date().toLocaleString(), ticket };
+  showLoading('Finalizing...', 'Please wait');
+  try {
+    await syncToCloud();
+    await sendEmail(S.emp.email,
+      `Travel Request ${S.reqId} — FULLY APPROVED`,
+      `Dear ${S.emp.name},\n\nYour travel request ${S.reqId} to ${S.travel.destination} is fully approved and arrangements have been made.\n\nBooking Reference: ${ticket || 'To be communicated separately.'}\n\nSafe travels!`
+    );
+    hideLoading();
+    showScreen('screenApproverDone');
+  } catch(e) {
+    hideLoading();
+    toast('Error: ' + (e.message || 'Unknown'), 'danger');
+  }
+}
+
+// ===== UI HELPERS =====
 function selectRadio(name, val, el) {
   document.querySelectorAll(`[onclick*="'${name}'"]`).forEach(e => e.classList.remove('selected'));
   el.classList.add('selected');
   S.radioValues[name] = val;
 }
+
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
 }
+
 function restoreUI() {
-  document.getElementById('headerReqId').textContent = S.reqId;
-  document.getElementById('headerStatus').textContent = 'Pending';
+  const hdr = document.getElementById('headerReqId');
+  if (hdr) hdr.textContent = S.reqId;
+  const sts = document.getElementById('headerStatus');
+  if (sts) sts.textContent = 'Pending';
 }
+
 function renderStage(stage) {
-  document.getElementById('reviewSummary').innerHTML = `Destination: ${S.travel.destination}`;
-  showScreen('screen' + (stage === 'supervisor' ? '1' : stage === 'security' ? '2' : '3'));
+  const summary = `<table class="data-table">
+    <tr><td>Employee</td><td>${S.emp.name || '—'}</td></tr>
+    <tr><td>Department</td><td>${S.emp.dept || '—'}</td></tr>
+    <tr><td>Destination</td><td>${S.travel.destination || '—'}</td></tr>
+    <tr><td>Travel Date</td><td>${S.travel.date || '—'}</td></tr>
+    <tr><td>Purpose</td><td>${S.travel.purpose || '—'}</td></tr>
+    <tr><td>Mode</td><td>${S.travel.mode || '—'}</td></tr>
+  </table>`;
+
+  const screenMap = { supervisor:'1', security:'2', finance:'3', logistics:'4' };
+  const screenId  = 'screen' + (screenMap[stage] || '1');
+
+  // Populate summary containers
+  ['reviewSummary','securitySummary','financeSummary','logisticsSummary'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = summary;
+  });
+
+  showScreen(screenId);
 }
-function showLoading(t, s) { 
-  document.getElementById('loadingText').textContent = t; 
-  document.getElementById('loadingOverlay').style.display = 'flex'; 
+
+function showLoading(t, s) {
+  const txt = document.getElementById('loadingText');
+  const sub = document.getElementById('loadingSub');
+  if (txt) txt.textContent = t;
+  if (sub) sub.textContent = s || '';
+  document.getElementById('loadingOverlay').style.display = 'flex';
 }
-function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none'; }
-function toast(m, c) { alert(m); }
+
+function hideLoading() {
+  document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+let _toastTimer;
+function toast(m, type) {
+  const el = document.getElementById('toast');
+  if (!el) { console.warn('Toast:', m); return; }
+  el.textContent = m;
+  el.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { el.classList.remove('show'); }, 4000);
+}
+
+function startNew() {
+  location.href = location.href.split('?')[0];
+}
+
+function generatePDF() {
+  toast('PDF generation requires html2pdf library', 'info');
+}
+
+function closeRecords() {
+  document.getElementById('recordsModal').style.display = 'none';
+}
 </script>
 </body>
 </html>
