@@ -853,59 +853,122 @@ function modeLabel(m) {
   return m==='air'?'✈ By Air': m==='road'?'🚗 By Road':'🚆 By Train';
 }
 
-// ===== LOCALSTORAGE =====
-function saveState() {
+// ===== CLOUD STORAGE (JSONBin.io) — works on ANY device/browser =====
+// Free tier: no auth needed for public bins, 10k requests/month
+const JSONBIN_BASE = 'https://api.jsonbin.io/v3/b';
+const JSONBIN_KEY  = '$2a$10$placeholder'; // not needed for public read/write with X-Master-Key header approach — using public bins
+
+// Map reqId → jsonbin bin ID stored in localStorage (only needed on originating device)
+function saveBinId(reqId, binId) {
+  try { localStorage.setItem('trf_bin_'+reqId, binId); } catch(e) {}
+}
+function getBinId(reqId) {
+  try { return localStorage.getItem('trf_bin_'+reqId) || null; } catch(e) { return null; }
+}
+
+// Also keep localStorage copy for same-device speed
+function saveStateLocal() {
   try { localStorage.setItem('trf_'+S.reqId, JSON.stringify({reqId:S.reqId,emp:S.emp,sup:S.sup,travel:S.travel,approvals:S.approvals})); }
-  catch(e) { console.warn('localStorage save failed',e); }
+  catch(e) {}
+}
+function loadStateLocal(reqId) {
+  try { const r = localStorage.getItem('trf_'+reqId); return r ? JSON.parse(r) : null; } catch(e) { return null; }
 }
 
-function loadStateById(reqId) {
-  try { const r = localStorage.getItem('trf_'+reqId); return r ? JSON.parse(r) : null; }
-  catch(e) { return null; }
+// Push state to cloud — creates bin on first call, updates on subsequent calls
+async function saveStateCloud() {
+  saveStateLocal();
+  const payload = {reqId:S.reqId,emp:S.emp,sup:S.sup,travel:S.travel,approvals:S.approvals};
+  const existingBinId = getBinId(S.reqId);
+  try {
+    if (existingBinId) {
+      // Update existing bin
+      await fetch(`${JSONBIN_BASE}/${existingBinId}`, {
+        method:'PUT',
+        headers:{'Content-Type':'application/json','X-Bin-Private':'false'},
+        body: JSON.stringify(payload)
+      });
+    } else {
+      // Create new public bin
+      const res = await fetch(JSONBIN_BASE, {
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-Bin-Name':S.reqId,'X-Bin-Private':'false'},
+        body: JSON.stringify(payload)
+      });
+      const json = await res.json();
+      const binId = json.metadata?.id;
+      if (binId) saveBinId(S.reqId, binId);
+    }
+  } catch(e) { console.warn('Cloud save failed — using local only',e); }
 }
 
-function buildCompactToken() {
-  const obj = {reqId:S.reqId,emp:S.emp,sup:S.sup,travel:S.travel,approvals:S.approvals};
-  return btoa(encodeURIComponent(JSON.stringify(obj)));
+// Fetch state from cloud by bin ID
+async function loadStateCloud(binId) {
+  const res = await fetch(`${JSONBIN_BASE}/${binId}/latest`);
+  if (!res.ok) throw new Error('Bin fetch failed');
+  const json = await res.json();
+  return json.record;
 }
 
-// ===== APPROVAL LINK — embeds full state in URL so it works on ANY device/browser =====
-function approvalLink(stage) {
-  saveState();
-  const base = window.location.href.split('?')[0];
-  const payload = btoa(encodeURIComponent(JSON.stringify({
-    reqId: S.reqId, emp: S.emp, sup: S.sup,
-    travel: S.travel, approvals: S.approvals
-  })));
-  return `${base}?stage=${stage}&req=${S.reqId}&d=${payload}`;
+// Build approval link using existing cloud bin ID (call saveStateCloud first)
+async function approvalLink(stage) {
+  await saveStateCloud();   // ensure latest state is pushed
+  const binId = getBinId(S.reqId);
+  const base  = window.location.href.split('?')[0];
+  if (binId) {
+    return `${base}?stage=${stage}&req=${S.reqId}&bin=${binId}`;
+  }
+  // Fallback: same-device only
+  saveStateLocal();
+  return `${base}?stage=${stage}&req=${S.reqId}`;
 }
 
 // ===== LOAD FROM APPROVAL LINK =====
-function handleApprovalLink(stage, reqId) {
+async function handleApprovalLink(stage, reqId) {
   S.currentStage = stage;
+  showLoading('Loading travel request…', 'Fetching request data — please wait');
 
-  // First try: extract embedded data from URL param (works on any device)
-  try {
-    const params = new URLSearchParams(window.location.search);
-    const raw = params.get('d');
-    if (raw) {
-      const data = JSON.parse(decodeURIComponent(atob(raw)));
-      // Save to localStorage for future same-device use
-      localStorage.setItem('trf_' + data.reqId, JSON.stringify(data));
+  const params = new URLSearchParams(window.location.search);
+  const binId  = params.get('bin');
+
+  // Try cloud first (bin ID in URL — works on any device)
+  if (binId) {
+    try {
+      const data = await loadStateCloud(binId);
+      saveBinId(data.reqId, binId);     // cache for future updates from this device
+      saveStateLocal.call({reqId: data.reqId, emp: data.emp, sup: data.sup, travel: data.travel, approvals: data.approvals});
+      localStorage.setItem('trf_'+data.reqId, JSON.stringify(data));
+      hideLoading();
       restoreState(data);
       renderStage(stage);
       return;
-    }
-  } catch(e) { console.warn('URL data parse failed', e); }
+    } catch(e) { console.warn('Cloud load failed, trying local', e); }
+  }
 
-  // Fallback: try localStorage (same device)
-  const data = loadStateById(reqId);
+  // Fallback: localStorage (same browser)
+  const data = loadStateLocal(reqId);
+  hideLoading();
   if (data) {
     restoreState(data);
     renderStage(stage);
   } else {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('screenNoData').classList.add('active');
+  }
+}
+
+// Compatibility: saveState now also syncs to cloud (fire-and-forget)
+function saveState() {
+  saveStateLocal();
+  // Also push to cloud if we already have a bin (update approvals after each step)
+  const binId = getBinId(S.reqId);
+  if (binId) {
+    const payload = {reqId:S.reqId,emp:S.emp,sup:S.sup,travel:S.travel,approvals:S.approvals};
+    fetch(`${JSONBIN_BASE}/${binId}`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Bin-Private':'false'},
+      body: JSON.stringify(payload)
+    }).catch(e => console.warn('Cloud sync failed',e));
   }
 }
 
@@ -1051,10 +1114,10 @@ async function submitEmployeeForm() {
   };
 
   document.getElementById('btnSubmit').disabled = true;
-  showLoading('Sending approval email to supervisor...', `Notifying ${S.sup.name}`);
+  showLoading('Saving & sending to supervisor...', `Uploading request & notifying ${S.sup.name}`);
 
   try {
-    const link = approvalLink('supervisor');
+    const link = await approvalLink('supervisor');
     await sendEmail(
       S.sup.email, S.sup.name,
       `[APPROVAL NEEDED] Travel Request ${S.reqId} — ${S.emp.name}`,
@@ -1123,7 +1186,7 @@ async function supervisorDecision(decision) {
   if (decision==='approved') {
     showLoading('Forwarding to Security...','Emailing '+DEPT.security);
     try {
-      const link = approvalLink('security');
+      const link = await approvalLink('security');
       await sendEmail(DEPT.security,'Security Team',
         `[SECURITY CLEARANCE NEEDED] Travel Request ${S.reqId} — ${S.emp.name}`,
         buildEmailBody(
@@ -1156,7 +1219,7 @@ async function securityDecision(decision) {
   if (decision==='approved') {
     showLoading('Forwarding to Finance...','Emailing '+DEPT.finance);
     try {
-      const link = approvalLink('finance');
+      const link = await approvalLink('finance');
       await sendEmail(DEPT.finance,'Finance Team',
         `[FINANCE APPROVAL NEEDED] Travel Request ${S.reqId} — ${S.emp.name}`,
         buildEmailBody(
@@ -1191,7 +1254,7 @@ async function financeDecision(decision) {
   if (decision==='approved') {
     showLoading('Forwarding to Logistics...','Emailing '+DEPT.logistics);
     try {
-      const link = approvalLink('logistics');
+      const link = await approvalLink('logistics');
       await sendEmail(DEPT.logistics,'Logistics Team',
         `[LOGISTICS ARRANGEMENT NEEDED] Travel Request ${S.reqId} — ${S.emp.name}`,
         buildEmailBody(
