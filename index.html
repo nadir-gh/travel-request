@@ -869,22 +869,41 @@ function buildCompactToken() {
   return btoa(encodeURIComponent(JSON.stringify(obj)));
 }
 
-// ===== APPROVAL LINK (short — only reqId in URL) =====
+// ===== APPROVAL LINK — embeds full state in URL so it works on ANY device/browser =====
 function approvalLink(stage) {
   saveState();
   const base = window.location.href.split('?')[0];
-  return `${base}?stage=${stage}&req=${S.reqId}`;
+  const payload = btoa(encodeURIComponent(JSON.stringify({
+    reqId: S.reqId, emp: S.emp, sup: S.sup,
+    travel: S.travel, approvals: S.approvals
+  })));
+  return `${base}?stage=${stage}&req=${S.reqId}&d=${payload}`;
 }
 
 // ===== LOAD FROM APPROVAL LINK =====
 function handleApprovalLink(stage, reqId) {
   S.currentStage = stage;
+
+  // First try: extract embedded data from URL param (works on any device)
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get('d');
+    if (raw) {
+      const data = JSON.parse(decodeURIComponent(atob(raw)));
+      // Save to localStorage for future same-device use
+      localStorage.setItem('trf_' + data.reqId, JSON.stringify(data));
+      restoreState(data);
+      renderStage(stage);
+      return;
+    }
+  } catch(e) { console.warn('URL data parse failed', e); }
+
+  // Fallback: try localStorage (same device)
   const data = loadStateById(reqId);
   if (data) {
     restoreState(data);
     renderStage(stage);
   } else {
-    // Data not found — must open on the same device/browser that submitted
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('screenNoData').classList.add('active');
   }
@@ -905,16 +924,6 @@ function renderStage(stage) {
   if (stage==='logistics')  { document.getElementById('logisticsSummary').innerHTML=summaryHTML(); setWF(4); showScreen('screen4'); }
 }
 
-function loadFromPaste() {
-  const raw = document.getElementById('pasteToken').value.trim();
-  try {
-    const data = JSON.parse(decodeURIComponent(atob(raw)));
-    localStorage.setItem('trf_'+data.reqId, JSON.stringify(data));
-    restoreState(data);
-    renderStage(S.currentStage || 'supervisor');
-    toast('✅ Request loaded!','success');
-  } catch(e) { toast('❌ Invalid code — copy it exactly from your email','danger'); }
-}
 
 // ===== SUMMARY TABLE =====
 function summaryHTML() {
