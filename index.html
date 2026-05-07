@@ -364,8 +364,34 @@ try { emailjs.init(EMAILJS_PUBLIC_KEY); } catch(e) { console.warn('EmailJS init 
 // ===== DATA ENCODING — embed entire state in the URL so any browser/device can open it =====
 function encodeState(state) {
   try {
-    const json = JSON.stringify(state);
-    // btoa needs latin1 — encode unicode via encodeURIComponent first
+    // Build a compact copy — trim all string values to save URL space
+    const compact = {
+      reqId: state.reqId,
+      emp: {
+        name:        (state.emp.name        || '').trim(),
+        email:       (state.emp.email       || '').trim(),
+        dept:        (state.emp.dept        || '').trim(),
+        designation: (state.emp.designation || '').trim(),
+        empId:       (state.emp.empId       || '').trim(),
+        phone:       (state.emp.phone       || '').trim()
+      },
+      sup: {
+        name:  (state.sup.name  || '').trim(),
+        email: (state.sup.email || '').trim()
+      },
+      travel: {
+        destination: (state.travel.destination || '').trim(),
+        date:        (state.travel.date        || '').trim(),
+        returnDate:  (state.travel.returnDate  || '').trim(),
+        purpose:     (state.travel.purpose     || '').slice(0, 120).trim(), // cap long text
+        notes:       (state.travel.notes       || '').slice(0, 100).trim(), // cap long text
+        mode:        (state.travel.mode        || '').trim(),
+        hotel:       (state.travel.hotel       || '').trim()
+      },
+      approvals: state.approvals,
+      radioValues: state.radioValues
+    };
+    const json = JSON.stringify(compact);
     return btoa(unescape(encodeURIComponent(json)));
   } catch(e) { throw new Error('Failed to encode state: ' + e.message); }
 }
@@ -378,10 +404,16 @@ function decodeState(b64) {
 }
 
 function getApprovalLink(stage) {
-  // Encode full state into URL — no server or cloud storage needed
+  // Encode compact state into URL — no server or cloud storage needed
   const encoded = encodeState(S);
   const base = window.location.href.split('?')[0];
-  return `${base}?stage=${stage}&data=${encoded}`;
+  const link = `${base}?stage=${stage}&data=${encoded}`;
+
+  // Hard warning if URL is still too long
+  if (link.length > 2500) {
+    console.warn(`⚠️ Approval link is ${link.length} chars — some email clients may truncate it. Consider shortening field values.`);
+  }
+  return link;
 }
 
 // ===== LOAD =====
@@ -529,9 +561,10 @@ async function supervisorDecision(decision) {
   try {
     if (decision === 'approved') {
       const link = getApprovalLink('security');
+      console.log('Security approval link length:', link.length, '\nLink:', link);
       await sendEmail(DEPT.security,
         `Security Clearance Required — ${S.reqId}`,
-        `Dear Security Team,\n\nTravel request ${S.reqId} for ${S.emp.name} (${S.emp.dept}) to ${S.travel.destination} on ${S.travel.date} has been approved by supervisor ${name}.\n\nPlease review and provide security clearance:\n\n${link}\n\nIMC Travel System`
+        `Dear Security Team,\n\nTravel request ${S.reqId} for ${S.emp.name} (${S.emp.dept}) to ${S.travel.destination} on ${S.travel.date} has been approved by supervisor ${name}.\n\nPurpose: ${S.travel.purpose}\n\nPlease review and provide security clearance by clicking the link below:\n\n${link}\n\n(This link works on any device or browser — no login required)\n\nIMC Travel System`
       );
     } else {
       await sendEmail(S.emp.email,
@@ -715,6 +748,36 @@ function generatePDF() {
 
 function closeRecords() {
   document.getElementById('recordsModal').style.display = 'none';
+}
+
+function openRecords() {
+  const modal = document.getElementById('recordsModal');
+  const content = document.getElementById('recordsContent');
+  // Show current request summary in the modal
+  if (S && S.reqId) {
+    content.innerHTML = `
+      <h3 style="margin:16px 0 10px;">Request: ${S.reqId}</h3>
+      <table class="data-table" style="margin-bottom:16px;">
+        <tr><td>Employee</td><td>${S.emp.name || '—'}</td></tr>
+        <tr><td>Department</td><td>${S.emp.dept || '—'}</td></tr>
+        <tr><td>Destination</td><td>${S.travel.destination || '—'}</td></tr>
+        <tr><td>Travel Date</td><td>${S.travel.date || '—'}</td></tr>
+        <tr><td>Return Date</td><td>${S.travel.returnDate || '—'}</td></tr>
+        <tr><td>Purpose</td><td>${S.travel.purpose || '—'}</td></tr>
+        <tr><td>Mode</td><td>${S.travel.mode || '—'}</td></tr>
+        <tr><td>Hotel</td><td>${S.travel.hotel || '—'}</td></tr>
+      </table>
+      <h4 style="margin-bottom:8px;">Approval Status</h4>
+      <table class="data-table">
+        <tr><td>Supervisor</td><td style="color:${S.approvals.supervisor.status==='approved'?'#1a6b3a':S.approvals.supervisor.status==='rejected'?'#8b1a1a':'#856404'};font-weight:700;">${(S.approvals.supervisor.status||'pending').toUpperCase()}${S.approvals.supervisor.name ? ' — '+S.approvals.supervisor.name : ''}</td></tr>
+        <tr><td>Security</td><td style="color:${S.approvals.security.status==='approved'?'#1a6b3a':S.approvals.security.status==='rejected'?'#8b1a1a':'#856404'};font-weight:700;">${(S.approvals.security.status||'pending').toUpperCase()}${S.approvals.security.name ? ' — '+S.approvals.security.name : ''}</td></tr>
+        <tr><td>Finance</td><td style="color:${S.approvals.finance.status==='approved'?'#1a6b3a':S.approvals.finance.status==='rejected'?'#8b1a1a':'#856404'};font-weight:700;">${(S.approvals.finance.status||'pending').toUpperCase()}${S.approvals.finance.name ? ' — '+S.approvals.finance.name : ''}</td></tr>
+        <tr><td>Logistics</td><td style="color:${S.approvals.logistics.status==='approved'?'#1a6b3a':S.approvals.logistics.status==='rejected'?'#8b1a1a':'#856404'};font-weight:700;">${(S.approvals.logistics.status||'pending').toUpperCase()}${S.approvals.logistics.name ? ' — '+S.approvals.logistics.name : ''}</td></tr>
+      </table>`;
+  } else {
+    content.innerHTML = '<p style="padding:16px;color:#5a6a7e;">No active request loaded.</p>';
+  }
+  modal.style.display = 'block';
 }
 </script>
 </body>
